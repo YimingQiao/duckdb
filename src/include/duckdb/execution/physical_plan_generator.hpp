@@ -88,6 +88,7 @@ protected:
 	unique_ptr<PhysicalOperator> CreatePlan(LogicalVacuum &op);
 	unique_ptr<PhysicalOperator> CreatePlan(LogicalUnnest &op);
 	unique_ptr<PhysicalOperator> CreatePlan(LogicalRecursiveCTE &op);
+	unique_ptr<PhysicalOperator> CreatePlan(LogicalReservoir &op);
 	unique_ptr<PhysicalOperator> CreatePlan(LogicalMaterializedCTE &op);
 	unique_ptr<PhysicalOperator> CreatePlan(LogicalCTERef &op);
 	unique_ptr<PhysicalOperator> CreatePlan(LogicalPivot &op);
