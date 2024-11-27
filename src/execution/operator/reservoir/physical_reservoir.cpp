@@ -194,6 +194,8 @@ OperatorResultType PhysicalReservoir::ExecuteInternal(ExecutionContext &context,
 //===--------------------------------------------------------------------===//
 enum class ReservoirSourceStage : uint8_t { INIT, SCAN_BUF, DONE };
 
+class ReservoirLocalSourceState;
+
 class ReservoirGlobalSourceState : public GlobalSourceState {
 public:
     ReservoirGlobalSourceState(const PhysicalReservoir &op, const ClientContext &context);
@@ -209,7 +211,6 @@ public:
 		D_ASSERT(op.sink_state);
 		auto &gstate = op.sink_state->Cast<ReservoirGlobalSinkState>();
 
-		idx_t count;
 		idx_t count = gstate.buffer->Count();
 		return count / ((idx_t)STANDARD_VECTOR_SIZE * parallel_scan_chunk_count);
 	}
@@ -386,6 +387,10 @@ SourceResultType PhysicalReservoir::GetData(ExecutionContext &context, DataChunk
 	}
 
 	return chunk.size() == 0 ? SourceResultType::FINISHED : SourceResultType::HAVE_MORE_OUTPUT;
+}
+
+double PhysicalReservoir::GetProgress(ClientContext &context, GlobalSourceState &gstate) const {
+	return PhysicalOperator::GetProgress(context, gstate);
 }
 
 //===--------------------------------------------------------------------===//

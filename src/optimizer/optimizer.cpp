@@ -21,7 +21,7 @@
 #include "duckdb/optimizer/regex_range_filter.hpp"
 #include "duckdb/optimizer/remove_duplicate_groups.hpp"
 #include "duckdb/optimizer/remove_unused_columns.hpp"
-#include "duckdb/optimizer/reservior_insert.hpp"
+#include "duckdb/optimizer/reservoir_insert.hpp"
 #include "duckdb/optimizer/rule/equal_or_null_simplification.hpp"
 #include "duckdb/optimizer/rule/in_clause_simplification.hpp"
 #include "duckdb/optimizer/rule/join_dependent_filter.hpp"
