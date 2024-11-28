@@ -317,7 +317,7 @@ bool ReservoirGlobalSourceState::AssignTask(ReservoirGlobalSinkState &sink, Rese
 	case ReservoirSourceStage::DONE:
 		break;
 	default:
-		throw InternalException("Unexpected HashJoinSourceStage in AssignTask!");
+		throw InternalException("Unexpected ReservoirSourceStage in AssignTask!");
 	}
 	return false;
 }
@@ -334,7 +334,7 @@ void ReservoirLocalSourceState::ExecuteTask(ReservoirGlobalSinkState &sink, Rese
 		ScanBuf(sink, gstate, chunk);
 		break;
 	default:
-		throw InternalException("Unexpected HashJoinSourceStage in ExecuteTask!");
+		throw InternalException("Unexpected ReservoirSourceStage in ExecuteTask!");
 	}
 }
 
@@ -343,7 +343,7 @@ bool ReservoirLocalSourceState::TaskFinished() const {
 	case ReservoirSourceStage::SCAN_BUF:
 		return scan_state == nullptr;
 	default:
-		throw InternalException("Unexpected HashJoinSourceStage in TaskFinished!");
+		throw InternalException("Unexpected ReservoirSourceStage in TaskFinished!");
 	}
 }
 

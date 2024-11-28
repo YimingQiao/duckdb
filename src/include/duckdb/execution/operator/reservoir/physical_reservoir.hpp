@@ -15,9 +15,6 @@
 
 namespace duckdb {
 
-//! PhysicalFilter represents a filter operator. It removes non-matching tuples
-//! from the result. Note that it does not physically change the data, it only
-//! adds a selection vector to the chunk.
 class PhysicalReservoir : public CachingPhysicalOperator {
 public:
 	static constexpr const PhysicalOperatorType TYPE = PhysicalOperatorType::RESERVOIR;

@@ -13,7 +13,6 @@
 
 namespace duckdb {
 
-//! LogicalTopN represents a comibination of ORDER BY and LIMIT clause, using Min/Max Heap
 class LogicalReservoir : public LogicalOperator {
 public:
 	static constexpr const LogicalOperatorType TYPE = LogicalOperatorType::LOGICAL_RESERVOIR;

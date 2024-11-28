@@ -9,9 +9,6 @@ unique_ptr<LogicalOperator> ReservoirInsert::Rewrite(unique_ptr<LogicalOperator>
 		op->children[i] = Rewrite(std::move(op->children[i]));
 	}
 	switch (op->type) {
-	// case LogicalOperatorType::LOGICAL_RECURSIVE_CTE:
-	// case LogicalOperatorType::LOGICAL_MATERIALIZED_CTE:
-	//     return op;
 	case LogicalOperatorType::LOGICAL_COMPARISON_JOIN:
 		return DoInsert(unique_ptr_cast<LogicalOperator, LogicalComparisonJoin>(std::move(op)));
 	default:
