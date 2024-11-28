@@ -23,31 +23,27 @@ namespace duckdb {
 // 3. When the all data from source is probed. The reservoir works as a source, outputting its stored data.
 //
 // I think it is a very clear design.
-class PhysicalReservoir : public CachingPhysicalOperator {
+class PhysicalReservoir : public PhysicalOperator {
 public:
 	static constexpr const PhysicalOperatorType TYPE = PhysicalOperatorType::RESERVOIR;
 
 public:
 	PhysicalReservoir(LogicalOperator &op, vector<LogicalType> types, idx_t estimated_cardinality);
-	~PhysicalReservoir() {
-		delete impoundment;
-	}
 
-private:
-	bool *impoundment;
+	bool is_impounding;
+	// Hack: this is a trick to let us modify the variable is_impounding in a const function, i.e. Execute() const.
+	bool *ptr_impounding;
 
 public:
-	unique_ptr<OperatorState> GetOperatorState(ExecutionContext &context) const override;
+	// Operator interface
+	OperatorResultType Execute(ExecutionContext &context, DataChunk &input, DataChunk &chunk,
+	                           GlobalOperatorState &gstate, OperatorState &state) const override;
 
 	bool ParallelOperator() const override {
 		return true;
 	}
 
-protected:
-	// CachingOperator Interface
-	OperatorResultType ExecuteInternal(ExecutionContext &context, DataChunk &input, DataChunk &chunk,
-	                                   GlobalOperatorState &gstate, OperatorState &state) const override;
-
+public:
 	// Source interface
 	unique_ptr<GlobalSourceState> GetGlobalSourceState(ClientContext &context) const override;
 	unique_ptr<LocalSourceState> GetLocalSourceState(ExecutionContext &context,
@@ -56,11 +52,9 @@ protected:
 
 	double GetProgress(ClientContext &context, GlobalSourceState &gstate) const override;
 
-	//! Becomes a source when it is an external join
 	bool IsSource() const override {
 		return true;
 	}
-
 	bool ParallelSource() const override {
 		return true;
 	}
@@ -84,6 +78,9 @@ public:
 	}
 
 public:
-	void BuildPipelines(Pipeline &current, MetaPipeline &meta_pipeline);
+	//! It builds two path
+	//! 1. source --> ... --> sink
+	//! 2. Source --> ... --> Reservoir, and Reservoir --> Sink
+	void BuildPipelines(Pipeline &current, MetaPipeline &meta_pipeline) override;
 };
 } // namespace duckdb

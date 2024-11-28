@@ -9,8 +9,8 @@
 namespace duckdb {
 
 PhysicalReservoir::PhysicalReservoir(LogicalOperator &op, vector<LogicalType> types, idx_t estimated_cardinality)
-    : CachingPhysicalOperator(PhysicalOperatorType::RESERVOIR, std::move(types), estimated_cardinality) {
-	impoundment = new bool(true);
+    : PhysicalOperator(PhysicalOperatorType::RESERVOIR, std::move(types), estimated_cardinality), is_impounding(true) {
+	ptr_impounding = &is_impounding;
 }
 
 //===--------------------------------------------------------------------===//
@@ -23,11 +23,11 @@ public:
 	      num_threads(NumericCast<idx_t>(TaskScheduler::GetScheduler(context).NumberOfThreads())),
 	      buffer_manager(BufferManager::GetBufferManager(context)),
 	      temporary_memory_state(TemporaryMemoryManager::Get(context).Register(context)), finalized(false) {
-		buffer = make_uniq<ColumnDataCollection>(buffer_manager, op_p.types);
+		global_buffer = make_uniq<ColumnDataCollection>(buffer_manager, op_p.types);
 	}
 
-	void ScheduleFinalize(Pipeline &pipeline, Event &event);
-	void InitializeProbeSpill();
+	//	void ScheduleFinalize(Pipeline &pipeline, Event &event);
+	//	void InitializeProbeSpill();
 
 public:
 	ClientContext &context;
@@ -39,15 +39,18 @@ public:
 	//! Temporary memory state for managing this operator's memory usage
 	unique_ptr<TemporaryMemoryState> temporary_memory_state;
 
-	//! Global HT used by the join
-	unique_ptr<ColumnDataCollection> buffer;
+	//! Global Buffer
+	unique_ptr<ColumnDataCollection> global_buffer;
 
-	//! Whether or not the hash table has been finalized
+	//! Whether or not all data has been sinked
 	bool finalized;
 	//! The number of active local states
 	atomic<idx_t> active_local_states;
 
-	//! Hash tables built by each thread
+	//! memory management
+	idx_t total_size;
+
+	//! Buffer held by each thread
 	vector<unique_ptr<ColumnDataCollection>> local_buffers;
 
 	//! Whether or not we have started scanning data using GetData
@@ -77,7 +80,9 @@ unique_ptr<LocalSinkState> PhysicalReservoir::GetLocalSinkState(ExecutionContext
 }
 
 SinkResultType PhysicalReservoir::Sink(ExecutionContext &context, DataChunk &chunk, OperatorSinkInput &input) const {
-	if (*impoundment) {
+	auto &gstate = input.global_state.Cast<ReservoirGlobalSinkState>();
+
+	if (gstate.op.is_impounding) {
 		auto &lstate = input.local_state.Cast<ReservoirLocalSinkState>();
 		lstate.buffer->Append(chunk);
 		return SinkResultType::NEED_MORE_INPUT;
@@ -114,71 +119,38 @@ static idx_t GetTupleWidth(const vector<LogicalType> &types, bool &all_constant)
 	}
 	return tuple_width + AlignValue(types.size()) / 8 + GetTypeIdSize(PhysicalType::UINT64);
 }
+
 void PhysicalReservoir::PrepareFinalize(ClientContext &context, GlobalSinkState &global_state) const {
-	// auto &gstate = global_state.Cast<ReservoirGlobalSinkState>();
-	// auto &ht = *gstate.buffer;
-	// gstate.total_size = ht.GetTotalSize(gstate.local_hash_tables, gstate.max_partition_size,
-	// gstate.max_partition_count); bool all_constant;
-	// gstate.temporary_memory_state->SetMaterializationPenalty(GetTupleWidth(children[0]->types, all_constant));
-	// gstate.temporary_memory_state->SetRemainingSize(gstate.total_size);
+	auto &gstate = global_state.Cast<ReservoirGlobalSinkState>();
+	auto &global_buffer = *gstate.global_buffer;
+	gstate.total_size = global_buffer.SizeInBytes();
+	bool all_constant;
+	gstate.temporary_memory_state->SetMaterializationPenalty(GetTupleWidth(children[0]->types, all_constant));
+	gstate.temporary_memory_state->SetRemainingSize(gstate.total_size);
 }
 
 SinkFinalizeType PhysicalReservoir::Finalize(Pipeline &pipeline, Event &event, ClientContext &context,
                                              OperatorSinkFinalizeInput &input) const {
 	auto &sink = input.global_state.Cast<ReservoirGlobalSinkState>();
-	auto &buf = *sink.buffer;
+	auto &global_buffer = *sink.global_buffer;
 
-	// sink.temporary_memory_state->UpdateReservation(context);
-	// sink.external = sink.temporary_memory_state->GetReservation() < sink.total_size;
-	// if (sink.external) {
-	// 	// External Hash Join
-	// 	sink.perfect_join_executor.reset();
-
-	// 	const auto max_partition_ht_size =
-	// 	    sink.max_partition_size + JoinHashTable::PointerTableSize(sink.max_partition_count);
-	// 	if (max_partition_ht_size > sink.temporary_memory_state->GetReservation()) {
-	// 		// We have to repartition
-	// 		ht.SetRepartitionRadixBits(sink.temporary_memory_state->GetReservation(), sink.max_partition_size,
-	// 		                           sink.max_partition_count);
-	// 		auto new_event = make_shared_ptr<HashJoinRepartitionEvent>(pipeline, *this, sink, sink.local_hash_tables);
-	// 		event.InsertEvent(std::move(new_event));
-	// 	} else {
-	// 		// No repartitioning! We do need some space for partitioning the probe-side, though
-	// 		const auto probe_side_requirement =
-	// 		    GetPartitioningSpaceRequirement(context, children[0]->types, ht.GetRadixBits(), sink.num_threads);
-	// 		sink.temporary_memory_state->SetMinimumReservation(max_partition_ht_size + probe_side_requirement);
-	// 		for (auto &local_ht : sink.local_hash_tables) {
-	// 			ht.Merge(*local_ht);
-	// 		}
-	// 		sink.local_hash_tables.clear();
-	// 		sink.hash_table->PrepareExternalFinalize(sink.temporary_memory_state->GetReservation());
-	// 		sink.ScheduleFinalize(pipeline, event);
-	// 	}
-	// 	sink.finalized = true;
-	// 	return SinkFinalizeType::READY;
-	// }
-
-	// In-memory Hash Join
+	// combine local buffers
 	for (auto &local_buf : sink.local_buffers) {
-		buf.Combine(*local_buf);
+		global_buffer.Combine(*local_buf);
 	}
 
 	sink.local_buffers.clear();
-
 	sink.finalized = true;
 	return SinkFinalizeType::READY;
 }
+
 //===--------------------------------------------------------------------===//
 // Operator
 //===--------------------------------------------------------------------===//
-unique_ptr<OperatorState> PhysicalReservoir::GetOperatorState(ExecutionContext &context) const {
-	auto state = make_uniq<OperatorState>();
-	return state;
-}
+OperatorResultType PhysicalReservoir::Execute(ExecutionContext &context, DataChunk &input, DataChunk &chunk,
+                                              GlobalOperatorState &gstate, OperatorState &state) const {
+	*ptr_impounding = false;
 
-OperatorResultType PhysicalReservoir::ExecuteInternal(ExecutionContext &context, DataChunk &input, DataChunk &chunk,
-                                                      GlobalOperatorState &gstate, OperatorState &state) const {
-	*impoundment = false;
 	chunk.Reference(input);
 	return OperatorResultType::NEED_MORE_INPUT;
 }
@@ -186,7 +158,7 @@ OperatorResultType PhysicalReservoir::ExecuteInternal(ExecutionContext &context,
 //===--------------------------------------------------------------------===//
 // Source
 //===--------------------------------------------------------------------===//
-enum class ReservoirSourceStage : uint8_t { INIT, SCAN_BUF, DONE };
+enum class ReservoirSourceStage : uint8_t { INIT, SCAN_BUFFER, DONE };
 
 class ReservoirLocalSourceState;
 
@@ -205,7 +177,7 @@ public:
 		D_ASSERT(op.sink_state);
 		auto &gstate = op.sink_state->Cast<ReservoirGlobalSinkState>();
 
-		idx_t count = gstate.buffer->Count();
+		idx_t count = gstate.global_buffer->Count();
 		return count / ((idx_t)STANDARD_VECTOR_SIZE * parallel_scan_chunk_count);
 	}
 
@@ -282,8 +254,8 @@ void ReservoirGlobalSourceState::Initialize(ReservoirGlobalSinkState &sink) {
 }
 
 void ReservoirGlobalSourceState::PrepareScan(ReservoirGlobalSinkState &sink) {
-	D_ASSERT(global_stage != ReservoirSourceStage::SCAN_BUF);
-	auto &buf = *sink.buffer;
+	D_ASSERT(global_stage != ReservoirSourceStage::SCAN_BUFFER);
+	auto &buf = *sink.global_buffer;
 
 	scan_chunk_idx = 0;
 	scan_chunk_count = buf.ChunkCount();
@@ -291,7 +263,7 @@ void ReservoirGlobalSourceState::PrepareScan(ReservoirGlobalSinkState &sink) {
 
 	scan_chunks_per_thread = MaxValue<idx_t>((scan_chunk_count + sink.num_threads - 1) / sink.num_threads, 1);
 
-	global_stage = ReservoirSourceStage::SCAN_BUF;
+	global_stage = ReservoirSourceStage::SCAN_BUFFER;
 }
 
 bool ReservoirGlobalSourceState::AssignTask(ReservoirGlobalSinkState &sink, ReservoirLocalSourceState &lstate) {
@@ -299,7 +271,7 @@ bool ReservoirGlobalSourceState::AssignTask(ReservoirGlobalSinkState &sink, Rese
 
 	auto guard = Lock();
 	switch (global_stage.load()) {
-	case ReservoirSourceStage::SCAN_BUF:
+	case ReservoirSourceStage::SCAN_BUFFER:
 		if (scan_chunk_idx != scan_chunk_count) {
 			lstate.local_stage = global_stage;
 			lstate.scan_chunk_idx_from = scan_chunk_idx;
@@ -318,13 +290,13 @@ bool ReservoirGlobalSourceState::AssignTask(ReservoirGlobalSinkState &sink, Rese
 
 ReservoirLocalSourceState::ReservoirLocalSourceState(const PhysicalReservoir &op, const ReservoirGlobalSinkState &sink,
                                                      Allocator &allocator)
-    : local_stage(ReservoirSourceStage::SCAN_BUF) {
+    : local_stage(ReservoirSourceStage::SCAN_BUFFER) {
 }
 
 void ReservoirLocalSourceState::ExecuteTask(ReservoirGlobalSinkState &sink, ReservoirGlobalSourceState &gstate,
                                             DataChunk &chunk) {
 	switch (local_stage) {
-	case ReservoirSourceStage::SCAN_BUF:
+	case ReservoirSourceStage::SCAN_BUFFER:
 		ScanBuf(sink, gstate, chunk);
 		break;
 	default:
@@ -334,7 +306,7 @@ void ReservoirLocalSourceState::ExecuteTask(ReservoirGlobalSinkState &sink, Rese
 
 bool ReservoirLocalSourceState::TaskFinished() const {
 	switch (local_stage) {
-	case ReservoirSourceStage::SCAN_BUF:
+	case ReservoirSourceStage::SCAN_BUFFER:
 		return scan_state == nullptr;
 	default:
 		throw InternalException("Unexpected ReservoirSourceStage in TaskFinished!");
@@ -343,14 +315,14 @@ bool ReservoirLocalSourceState::TaskFinished() const {
 
 void ReservoirLocalSourceState::ScanBuf(ReservoirGlobalSinkState &sink, ReservoirGlobalSourceState &gstate,
                                         DataChunk &chunk) {
-	D_ASSERT(local_stage == ReservoirSourceStage::SCAN_BUF);
+	D_ASSERT(local_stage == ReservoirSourceStage::SCAN_BUFFER);
 
 	if (!scan_state) {
 		scan_state = make_uniq<ReservoirScanState>();
 		scan_state->chunk_idx = scan_chunk_idx_from;
 	}
 
-	sink.buffer->FetchChunk(scan_state->chunk_idx++, chunk);
+	sink.global_buffer->FetchChunk(scan_state->chunk_idx++, chunk);
 
 	if (scan_state->chunk_idx == scan_chunk_idx_to) {
 		scan_state = nullptr;
@@ -395,9 +367,9 @@ void PhysicalReservoir::BuildPipelines(Pipeline &current, MetaPipeline &meta_pip
 	op_state.reset();
 
 	auto &state = meta_pipeline.GetState();
-	if (children.size() != 1) {
-		throw InternalException("Operator not supported in BuildPipelines");
-	}
+
+	// 1. First Path: Source --> ... --> Sink
+	D_ASSERT(children.size() == 1);
 
 	// copy the pipeline
 	auto &new_current = meta_pipeline.CreateUnionPipeline(current, false);
@@ -405,7 +377,7 @@ void PhysicalReservoir::BuildPipelines(Pipeline &current, MetaPipeline &meta_pip
 	state.AddPipelineOperator(new_current, *this);
 	children[0]->BuildPipelines(new_current, meta_pipeline);
 
-	// build the sink pipeline
+	// 2. Second Path: Source --> ... --> Reservoir, and Reservoir --> Sink
 	sink_state.reset();
 	D_ASSERT(children.size() == 1);
 
