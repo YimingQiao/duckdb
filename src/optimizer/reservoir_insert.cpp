@@ -70,6 +70,6 @@ unique_ptr<LogicalOperator> ReserviorInsert::DoInsert(unique_ptr<LogicalComparis
 		op->children[0] = std::move(reservoir);
 	}
 
-	return move(op);
+	return std::move(op);
 }
 } // namespace duckdb
