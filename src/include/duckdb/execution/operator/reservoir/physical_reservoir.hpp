@@ -15,12 +15,26 @@
 
 namespace duckdb {
 
+// The Reservoir Operator is used to store data before probing.
+// 1. When hash table building is not finished, the reservoir works as a sink.
+// 2. When hash table building finishes, the left pipeline begins, calling the executeInternal function of this
+// reservoir.
+//    Thus, the reservoir stops sink, and then execute as a normal operator.
+// 3. When the all data from source is probed. The reservoir works as a source, outputting its stored data.
+//
+// I think it is a very clear design.
 class PhysicalReservoir : public CachingPhysicalOperator {
 public:
 	static constexpr const PhysicalOperatorType TYPE = PhysicalOperatorType::RESERVOIR;
 
 public:
 	PhysicalReservoir(LogicalOperator &op, vector<LogicalType> types, idx_t estimated_cardinality);
+	~PhysicalReservoir() {
+		delete impoundment;
+	}
+
+private:
+	bool *impoundment;
 
 public:
 	unique_ptr<OperatorState> GetOperatorState(ExecutionContext &context) const override;
@@ -71,8 +85,5 @@ public:
 
 public:
 	void BuildPipelines(Pipeline &current, MetaPipeline &meta_pipeline);
-
-private:
-	bool *impoundment;
 };
 } // namespace duckdb

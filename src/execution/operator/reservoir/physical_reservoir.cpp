@@ -9,7 +9,7 @@
 namespace duckdb {
 
 PhysicalReservoir::PhysicalReservoir(LogicalOperator &op, vector<LogicalType> types, idx_t estimated_cardinality)
-    : CachingPhysicalOperator(type, op.types, estimated_cardinality) {
+    : CachingPhysicalOperator(PhysicalOperatorType::RESERVOIR, std::move(types), estimated_cardinality) {
 	impoundment = new bool(true);
 }
 
@@ -46,12 +46,6 @@ public:
 	bool finalized;
 	//! The number of active local states
 	atomic<idx_t> active_local_states;
-
-	//! Whether we are doing an external + some sizes
-	// bool external;
-	// idx_t total_size;
-	// idx_t max_partition_size;
-	// idx_t max_partition_count;
 
 	//! Hash tables built by each thread
 	vector<unique_ptr<ColumnDataCollection>> local_buffers;

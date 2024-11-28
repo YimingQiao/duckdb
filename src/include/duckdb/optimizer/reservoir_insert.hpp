@@ -20,7 +20,7 @@ class Optimizer;
 
 class ReservoirInsert {
 public:
-	ReservoirInsert(ClientContext &client_context) : context(context) {};
+	ReservoirInsert(ClientContext &client_context) : context(client_context) {};
 
 	unique_ptr<LogicalOperator> Rewrite(unique_ptr<LogicalOperator> op);
 
