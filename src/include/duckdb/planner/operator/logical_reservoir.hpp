@@ -19,8 +19,7 @@ public:
 	static constexpr const LogicalOperatorType TYPE = LogicalOperatorType::LOGICAL_RESERVOIR;
 
 public:
-	LogicalReservoir()
-	    : LogicalOperator(LogicalOperatorType::LOGICAL_RESERVOIR) {
+	LogicalReservoir() : LogicalOperator(LogicalOperatorType::LOGICAL_RESERVOIR) {
 	}
 
 public:

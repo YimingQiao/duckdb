@@ -76,6 +76,6 @@ public:
 	void BuildPipelines(Pipeline &current, MetaPipeline &meta_pipeline);
 
 private:
-    bool* impoundment;
+	bool *impoundment;
 };
 } // namespace duckdb

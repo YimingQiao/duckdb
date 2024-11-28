@@ -10,7 +10,7 @@ namespace duckdb {
 
 PhysicalReservoir::PhysicalReservoir(LogicalOperator &op, vector<LogicalType> types, idx_t estimated_cardinality)
     : CachingPhysicalOperator(type, op.types, estimated_cardinality) {
-    impoundment = new bool(true);
+	impoundment = new bool(true);
 }
 
 //===--------------------------------------------------------------------===//
@@ -18,10 +18,10 @@ PhysicalReservoir::PhysicalReservoir(LogicalOperator &op, vector<LogicalType> ty
 //===--------------------------------------------------------------------===//
 class ReservoirGlobalSinkState : public GlobalSinkState {
 public:
-    ReservoirGlobalSinkState(const PhysicalReservoir &op_p, ClientContext &context_p)
+	ReservoirGlobalSinkState(const PhysicalReservoir &op_p, ClientContext &context_p)
 	    : context(context_p), op(op_p),
 	      num_threads(NumericCast<idx_t>(TaskScheduler::GetScheduler(context).NumberOfThreads())),
-          buffer_manager(BufferManager::GetBufferManager(context)),
+	      buffer_manager(BufferManager::GetBufferManager(context)),
 	      temporary_memory_state(TemporaryMemoryManager::Get(context).Register(context)), finalized(false) {
 		buffer = make_uniq<ColumnDataCollection>(buffer_manager, op_p.types);
 	}
@@ -35,7 +35,7 @@ public:
 
 	const idx_t num_threads;
 
-    BufferManager &buffer_manager;
+	BufferManager &buffer_manager;
 	//! Temporary memory state for managing this operator's memory usage
 	unique_ptr<TemporaryMemoryState> temporary_memory_state;
 
@@ -56,7 +56,7 @@ public:
 	//! Hash tables built by each thread
 	vector<unique_ptr<ColumnDataCollection>> local_buffers;
 
-    //! Whether or not we have started scanning data using GetData
+	//! Whether or not we have started scanning data using GetData
 	atomic<bool> scanned_data;
 };
 
@@ -83,12 +83,12 @@ unique_ptr<LocalSinkState> PhysicalReservoir::GetLocalSinkState(ExecutionContext
 }
 
 SinkResultType PhysicalReservoir::Sink(ExecutionContext &context, DataChunk &chunk, OperatorSinkInput &input) const {
-    if (*impoundment) {
-        auto &lstate = input.local_state.Cast<ReservoirLocalSinkState>();
-        lstate.buffer->Append(chunk);
-        return SinkResultType::NEED_MORE_INPUT;
-    }
-    return SinkResultType::FINISHED;
+	if (*impoundment) {
+		auto &lstate = input.local_state.Cast<ReservoirLocalSinkState>();
+		lstate.buffer->Append(chunk);
+		return SinkResultType::NEED_MORE_INPUT;
+	}
+	return SinkResultType::FINISHED;
 }
 
 SinkCombineResultType PhysicalReservoir::Combine(ExecutionContext &context, OperatorSinkCombineInput &input) const {
@@ -123,8 +123,8 @@ static idx_t GetTupleWidth(const vector<LogicalType> &types, bool &all_constant)
 void PhysicalReservoir::PrepareFinalize(ClientContext &context, GlobalSinkState &global_state) const {
 	// auto &gstate = global_state.Cast<ReservoirGlobalSinkState>();
 	// auto &ht = *gstate.buffer;
-	// gstate.total_size = ht.GetTotalSize(gstate.local_hash_tables, gstate.max_partition_size, gstate.max_partition_count);
-	// bool all_constant;
+	// gstate.total_size = ht.GetTotalSize(gstate.local_hash_tables, gstate.max_partition_size,
+	// gstate.max_partition_count); bool all_constant;
 	// gstate.temporary_memory_state->SetMaterializationPenalty(GetTupleWidth(children[0]->types, all_constant));
 	// gstate.temporary_memory_state->SetRemainingSize(gstate.total_size);
 }
@@ -178,15 +178,15 @@ SinkFinalizeType PhysicalReservoir::Finalize(Pipeline &pipeline, Event &event, C
 // Operator
 //===--------------------------------------------------------------------===//
 unique_ptr<OperatorState> PhysicalReservoir::GetOperatorState(ExecutionContext &context) const {
-    auto state = make_uniq<OperatorState>();
-    return state;
+	auto state = make_uniq<OperatorState>();
+	return state;
 }
 
 OperatorResultType PhysicalReservoir::ExecuteInternal(ExecutionContext &context, DataChunk &input, DataChunk &chunk,
-	                                                  GlobalOperatorState &gstate, OperatorState &state) const {
-    *impoundment = false;
-    chunk.Reference(input);
-    return OperatorResultType::NEED_MORE_INPUT;
+                                                      GlobalOperatorState &gstate, OperatorState &state) const {
+	*impoundment = false;
+	chunk.Reference(input);
+	return OperatorResultType::NEED_MORE_INPUT;
 }
 
 //===--------------------------------------------------------------------===//
@@ -198,41 +198,41 @@ class ReservoirLocalSourceState;
 
 class ReservoirGlobalSourceState : public GlobalSourceState {
 public:
-    ReservoirGlobalSourceState(const PhysicalReservoir &op, const ClientContext &context);
+	ReservoirGlobalSourceState(const PhysicalReservoir &op, const ClientContext &context);
 
-    //! Initialize this source state using the info in the sink
-    void Initialize(ReservoirGlobalSinkState &sink);
-    //! Prepare the scan_buf stage
-    void PrepareScan(ReservoirGlobalSinkState &sink);
-    //! Assigns a task to a local source state
-	bool AssignTask(ReservoirGlobalSinkState &sink, ReservoirLocalSourceState &lstate);  
+	//! Initialize this source state using the info in the sink
+	void Initialize(ReservoirGlobalSinkState &sink);
+	//! Prepare the scan_buf stage
+	void PrepareScan(ReservoirGlobalSinkState &sink);
+	//! Assigns a task to a local source state
+	bool AssignTask(ReservoirGlobalSinkState &sink, ReservoirLocalSourceState &lstate);
 
-    idx_t MaxThreads() override {
+	idx_t MaxThreads() override {
 		D_ASSERT(op.sink_state);
 		auto &gstate = op.sink_state->Cast<ReservoirGlobalSinkState>();
 
 		idx_t count = gstate.buffer->Count();
 		return count / ((idx_t)STANDARD_VECTOR_SIZE * parallel_scan_chunk_count);
 	}
+
 public:
 	const PhysicalReservoir &op;
 
-    //! For synchronizing
-    atomic<ReservoirSourceStage> global_stage;
+	//! For synchronizing
+	atomic<ReservoirSourceStage> global_stage;
 
-    //! For buffer scan synchronization
-    idx_t scan_chunk_idx = DConstants::INVALID_INDEX;
+	//! For buffer scan synchronization
+	idx_t scan_chunk_idx = DConstants::INVALID_INDEX;
 	idx_t scan_chunk_count;
 	idx_t scan_chunk_done;
 	idx_t scan_chunks_per_thread = DConstants::INVALID_INDEX;
 
-    idx_t parallel_scan_chunk_count;
+	idx_t parallel_scan_chunk_count;
 };
 
 struct ReservoirScanState {
 public:
-	ReservoirScanState()
-	    : chunk_idx(DConstants::INVALID_INDEX) {
+	ReservoirScanState() : chunk_idx(DConstants::INVALID_INDEX) {
 	}
 
 	idx_t chunk_idx;
@@ -245,30 +245,30 @@ private:
 class ReservoirLocalSourceState : public LocalSourceState {
 public:
 	ReservoirLocalSourceState(const PhysicalReservoir &op, const ReservoirGlobalSinkState &sink, Allocator &allocator);
-    
-    //! Do the work this thread has been assigned
+
+	//! Do the work this thread has been assigned
 	void ExecuteTask(ReservoirGlobalSinkState &sink, ReservoirGlobalSourceState &gstate, DataChunk &chunk);
 	//! Whether this thread has finished the work it has been assigned
 	bool TaskFinished() const;
-    //! Scan 
-    void ScanBuf(ReservoirGlobalSinkState &sink, ReservoirGlobalSourceState &gstate, DataChunk &chunk);
+	//! Scan
+	void ScanBuf(ReservoirGlobalSinkState &sink, ReservoirGlobalSourceState &gstate, DataChunk &chunk);
 
 public:
-    //! The stage that this thread was assigned work for
+	//! The stage that this thread was assigned work for
 	ReservoirSourceStage local_stage;
 
-    idx_t scan_chunk_idx_from = DConstants::INVALID_INDEX;
+	idx_t scan_chunk_idx_from = DConstants::INVALID_INDEX;
 	idx_t scan_chunk_idx_to = DConstants::INVALID_INDEX;
 
-    unique_ptr<ReservoirScanState> scan_state;
+	unique_ptr<ReservoirScanState> scan_state;
 };
 
 unique_ptr<GlobalSourceState> PhysicalReservoir::GetGlobalSourceState(ClientContext &context) const {
-    return make_uniq<ReservoirGlobalSourceState>(*this, context);
+	return make_uniq<ReservoirGlobalSourceState>(*this, context);
 }
 
 unique_ptr<LocalSourceState> PhysicalReservoir::GetLocalSourceState(ExecutionContext &context,
-                                                                   GlobalSourceState &gstate) const {
+                                                                    GlobalSourceState &gstate) const {
 	return make_uniq<ReservoirLocalSourceState>(*this, sink_state->Cast<ReservoirGlobalSinkState>(),
 	                                            BufferAllocator::Get(context.client));
 }
@@ -284,20 +284,20 @@ void ReservoirGlobalSourceState::Initialize(ReservoirGlobalSinkState &sink) {
 		return;
 	}
 
-    PrepareScan(sink);
+	PrepareScan(sink);
 }
 
 void ReservoirGlobalSourceState::PrepareScan(ReservoirGlobalSinkState &sink) {
-    D_ASSERT(global_stage != ReservoirSourceStage::SCAN_BUF);
-    auto &buf = *sink.buffer;
+	D_ASSERT(global_stage != ReservoirSourceStage::SCAN_BUF);
+	auto &buf = *sink.buffer;
 
-    scan_chunk_idx = 0;
+	scan_chunk_idx = 0;
 	scan_chunk_count = buf.ChunkCount();
 	scan_chunk_done = 0;
 
 	scan_chunks_per_thread = MaxValue<idx_t>((scan_chunk_count + sink.num_threads - 1) / sink.num_threads, 1);
 
-    global_stage = ReservoirSourceStage::SCAN_BUF;
+	global_stage = ReservoirSourceStage::SCAN_BUF;
 }
 
 bool ReservoirGlobalSourceState::AssignTask(ReservoirGlobalSinkState &sink, ReservoirLocalSourceState &lstate) {
@@ -324,10 +324,11 @@ bool ReservoirGlobalSourceState::AssignTask(ReservoirGlobalSinkState &sink, Rese
 
 ReservoirLocalSourceState::ReservoirLocalSourceState(const PhysicalReservoir &op, const ReservoirGlobalSinkState &sink,
                                                      Allocator &allocator)
-    : local_stage(ReservoirSourceStage::SCAN_BUF) { }
+    : local_stage(ReservoirSourceStage::SCAN_BUF) {
+}
 
 void ReservoirLocalSourceState::ExecuteTask(ReservoirGlobalSinkState &sink, ReservoirGlobalSourceState &gstate,
-                                           DataChunk &chunk) {
+                                            DataChunk &chunk) {
 	switch (local_stage) {
 	case ReservoirSourceStage::SCAN_BUF:
 		ScanBuf(sink, gstate, chunk);
@@ -352,7 +353,7 @@ void ReservoirLocalSourceState::ScanBuf(ReservoirGlobalSinkState &sink, Reservoi
 
 	if (!scan_state) {
 		scan_state = make_uniq<ReservoirScanState>();
-        scan_state->chunk_idx = scan_chunk_idx_from;
+		scan_state->chunk_idx = scan_chunk_idx_from;
 	}
 
 	sink.buffer->FetchChunk(scan_state->chunk_idx++, chunk);
@@ -381,9 +382,9 @@ SourceResultType PhysicalReservoir::GetData(ExecutionContext &context, DataChunk
 		if (!lstate.TaskFinished() || gstate.AssignTask(sink, lstate)) {
 			lstate.ExecuteTask(sink, gstate, chunk);
 		} else {
-            auto guard = gstate.Lock();
-            gstate.global_stage = ReservoirSourceStage::DONE;
-        }
+			auto guard = gstate.Lock();
+			gstate.global_stage = ReservoirSourceStage::DONE;
+		}
 	}
 
 	return chunk.size() == 0 ? SourceResultType::FINISHED : SourceResultType::HAVE_MORE_OUTPUT;
@@ -403,7 +404,7 @@ void PhysicalReservoir::BuildPipelines(Pipeline &current, MetaPipeline &meta_pip
 	if (children.size() != 1) {
 		throw InternalException("Operator not supported in BuildPipelines");
 	}
-	
+
 	// copy the pipeline
 	auto &new_current = meta_pipeline.CreateUnionPipeline(current, false);
 	// build the caching operator pipeline
@@ -421,4 +422,4 @@ void PhysicalReservoir::BuildPipelines(Pipeline &current, MetaPipeline &meta_pip
 	auto &child_meta_pipeline = meta_pipeline.CreateChildMetaPipeline(current, *this);
 	child_meta_pipeline.Build(*children[0]);
 }
-}
+} // namespace duckdb
