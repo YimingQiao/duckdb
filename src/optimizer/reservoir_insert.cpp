@@ -4,7 +4,7 @@
 #include "duckdb/planner/operator/logical_reservoir.hpp"
 
 namespace duckdb {
-unique_ptr<LogicalOperator> ReserviorInsert::Rewrite(unique_ptr<LogicalOperator> op) {
+unique_ptr<LogicalOperator> ReservoirInsert::Rewrite(unique_ptr<LogicalOperator> op) {
 	for (idx_t i = 0; i < op->children.size(); i++) {
 		op->children[i] = Rewrite(std::move(op->children[i]));
 	}
@@ -42,7 +42,7 @@ bool HasEquality(vector<JoinCondition> &conds, idx_t &range_count) {
 	return false;
 }
 
-unique_ptr<LogicalOperator> ReserviorInsert::DoInsert(unique_ptr<LogicalComparisonJoin> op) {
+unique_ptr<LogicalOperator> ReservoirInsert::DoInsert(unique_ptr<LogicalComparisonJoin> op) {
 	idx_t has_range = 0;
 	bool has_equality = HasEquality(op->conditions, has_range);
 

@@ -245,8 +245,8 @@ void Optimizer::RunBuiltInOptimizers() {
 		join_filter_pushdown.VisitOperator(*plan);
 	});
 
-	RunOptimizer(OptimizerType::RESERVIOR_INSERT, [&]() {
-		ReserviorInsert insertion(context);
+	RunOptimizer(OptimizerType::RESERVOIR_INSERT, [&]() {
+		ReservoirInsert insertion(context);
 		plan = insertion.Rewrite(std::move(plan));
 	});
 }

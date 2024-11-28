@@ -18,9 +18,9 @@ namespace duckdb {
 class LogicalOperator;
 class Optimizer;
 
-class ReserviorInsert {
+class ReservoirInsert {
 public:
-	ReserviorInsert(ClientContext &client_context) : context(context) {};
+	ReservoirInsert(ClientContext &client_context) : context(context) {};
 
 	unique_ptr<LogicalOperator> Rewrite(unique_ptr<LogicalOperator> op);
 
