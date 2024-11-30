@@ -48,7 +48,7 @@ public:
 	}
 };
 
-class GlobalOperatorState {
+class GlobalOperatorState : public StateWithBlockableTasks {
 public:
 	virtual ~GlobalOperatorState() {
 	}

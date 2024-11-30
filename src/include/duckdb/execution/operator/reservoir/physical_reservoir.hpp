@@ -30,16 +30,23 @@ public:
 public:
 	PhysicalReservoir(LogicalOperator &op, vector<LogicalType> types, idx_t estimated_cardinality);
 
-	bool is_impounding;
-	// Hack: this is a trick to let us modify the variable is_impounding in a const function, i.e. Execute() const.
-	bool *ptr_impounding;
+	// we can modify the variable is_impounding in a const function, i.e. Execute() const.
+	mutable bool is_impounding;
 
 public:
 	// Operator interface
+	unique_ptr<OperatorState> GetOperatorState(ExecutionContext &context) const override;
+	unique_ptr<GlobalOperatorState> GetGlobalOperatorState(ClientContext &context) const override;
 	OperatorResultType Execute(ExecutionContext &context, DataChunk &input, DataChunk &chunk,
 	                           GlobalOperatorState &gstate, OperatorState &state) const override;
+	OperatorFinalizeResultType FinalExecute(ExecutionContext &context, DataChunk &chunk, GlobalOperatorState &gstate,
+	                                        OperatorState &state_p) const override;
 
 	bool ParallelOperator() const override {
+		return true;
+	}
+
+	bool RequiresFinalExecute() const override {
 		return true;
 	}
 
@@ -60,27 +67,10 @@ public:
 	}
 
 public:
-	// Sink Interface
-	unique_ptr<GlobalSinkState> GetGlobalSinkState(ClientContext &context) const override;
-
-	unique_ptr<LocalSinkState> GetLocalSinkState(ExecutionContext &context) const override;
-	SinkResultType Sink(ExecutionContext &context, DataChunk &chunk, OperatorSinkInput &input) const override;
-	SinkCombineResultType Combine(ExecutionContext &context, OperatorSinkCombineInput &input) const override;
-	void PrepareFinalize(ClientContext &context, GlobalSinkState &global_state) const override;
-	SinkFinalizeType Finalize(Pipeline &pipeline, Event &event, ClientContext &context,
-	                          OperatorSinkFinalizeInput &input) const override;
-
-	bool IsSink() const override {
-		return true;
-	}
-	bool ParallelSink() const override {
-		return true;
-	}
-
-public:
 	//! It builds two path
 	//! 1. source --> ... --> sink
-	//! 2. Source --> ... --> Reservoir, and Reservoir --> Sink
+	//!    This pipeline has two stages, controlled by the variable is_impound.
+	//! 2. Reservoir --> Sink
 	void BuildPipelines(Pipeline &current, MetaPipeline &meta_pipeline) override;
 };
 } // namespace duckdb
