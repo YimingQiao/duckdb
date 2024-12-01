@@ -202,7 +202,7 @@ public:
 	//! Whether this thread has finished the work it has been assigned
 	bool TaskFinished() const;
 	//! Scan
-	void ScanBuf(ReservoirGlobalOperatorState &op_gstate, ReservoirGlobalSourceState &gstate, DataChunk &chunk);
+	void ScanBuffer(ReservoirGlobalOperatorState &op_gstate, ReservoirGlobalSourceState &gstate, DataChunk &chunk);
 
 public:
 	//! The stage that this thread was assigned work for
@@ -288,7 +288,7 @@ void ReservoirLocalSourceState::ExecuteTask(ReservoirGlobalOperatorState &op_gst
                                             DataChunk &chunk) {
 	switch (local_stage) {
 	case ReservoirSourceStage::SCAN_BUFFER:
-		ScanBuf(op_gstate, gstate, chunk);
+		ScanBuffer(op_gstate, gstate, chunk);
 		break;
 	default:
 		throw InternalException("Unexpected ReservoirSourceStage in ExecuteTask!");
@@ -304,8 +304,8 @@ bool ReservoirLocalSourceState::TaskFinished() const {
 	}
 }
 
-void ReservoirLocalSourceState::ScanBuf(ReservoirGlobalOperatorState &op_gstate, ReservoirGlobalSourceState &gstate,
-                                        DataChunk &chunk) {
+void ReservoirLocalSourceState::ScanBuffer(ReservoirGlobalOperatorState &op_gstate, ReservoirGlobalSourceState &gstate,
+                                           DataChunk &chunk) {
 	D_ASSERT(local_stage == ReservoirSourceStage::SCAN_BUFFER);
 
 	if (!scan_state) {
