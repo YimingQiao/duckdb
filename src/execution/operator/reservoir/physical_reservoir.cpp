@@ -80,11 +80,13 @@ OperatorResultType PhysicalReservoir::Execute(ExecutionContext &context, DataChu
 		op_state.buffer->Append(input);
 	} else {
 		if (!op_state.buffer_merged) {
-			auto now = std::chrono::system_clock::now();
-			auto duration = now.time_since_epoch();
-			auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() % 1000000;
-			std::cerr << "[Reservoir::FinalExecute] Pounding Water...\tTicks: "
-			          << std::to_string(milliseconds) + "ms\n";
+			if (reservoir_debug) {
+				auto now = std::chrono::system_clock::now();
+				auto duration = now.time_since_epoch();
+				auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() % 1000000;
+				std::cerr << "[Reservoir::FinalExecute] Pounding Water...\tTicks: "
+				          << std::to_string(milliseconds) + "ms\n";
+			}
 
 			auto guard = op_gstate.Lock();
 			op_gstate.local_buffers.push_back(std::move(op_state.buffer));
@@ -112,10 +114,13 @@ OperatorFinalizeResultType PhysicalReservoir::FinalExecute(ExecutionContext &con
 	auto &op_state = state_p.Cast<ReservoirOperatorState>();
 
 	if (!op_state.buffer_merged) {
-		auto now = std::chrono::system_clock::now();
-		auto duration = now.time_since_epoch();
-		auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() % 1000000;
-		std::cerr << "[Reservoir::FinalExecute] Pounding Water...\tTicks: " << std::to_string(milliseconds) + "ms\n";
+		if (reservoir_debug) {
+			auto now = std::chrono::system_clock::now();
+			auto duration = now.time_since_epoch();
+			auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() % 1000000;
+			std::cerr << "[Reservoir::FinalExecute] Pounding Water...\tTicks: "
+			          << std::to_string(milliseconds) + "ms\n";
+		}
 
 		{
 			auto guard = op_gstate.Lock();

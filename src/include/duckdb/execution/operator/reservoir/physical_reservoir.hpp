@@ -33,6 +33,8 @@ public:
 	// we can modify the variable is_impounding in a const function, i.e. Execute() const.
 	mutable atomic<bool> is_impounding;
 
+	const bool reservoir_debug = false;
+
 public:
 	// Operator interface
 	unique_ptr<OperatorState> GetOperatorState(ExecutionContext &context) const override;
