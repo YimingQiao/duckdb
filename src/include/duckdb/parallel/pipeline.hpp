@@ -83,6 +83,8 @@ public:
 	ClientContext &GetClientContext();
 
 	void AddDependency(shared_ptr<Pipeline> &pipeline);
+	void ClearDependencies();
+	void CopyDependencies(shared_ptr<Pipeline> &pipeline);
 
 	void Ready();
 	void Reset();

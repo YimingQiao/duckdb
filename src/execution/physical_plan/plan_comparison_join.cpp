@@ -7,6 +7,7 @@
 #include "duckdb/execution/operator/join/physical_iejoin.hpp"
 #include "duckdb/execution/operator/join/physical_nested_loop_join.hpp"
 #include "duckdb/execution/operator/join/physical_piecewise_merge_join.hpp"
+#include "duckdb/execution/operator/reservoir/physical_reservoir.hpp"
 #include "duckdb/execution/operator/scan/physical_table_scan.hpp"
 #include "duckdb/execution/physical_plan_generator.hpp"
 #include "duckdb/function/table/table_scan.hpp"
@@ -176,6 +177,11 @@ unique_ptr<PhysicalOperator> PhysicalPlanGenerator::PlanComparisonJoin(LogicalCo
 		                                op.left_projection_map, op.right_projection_map, std::move(op.mark_types),
 		                                op.estimated_cardinality, perfect_join_stats, std::move(op.filter_pushdown));
 
+		if (plan->children[0]->type == PhysicalOperatorType::RESERVOIR) {
+			PhysicalHashJoin *hash_join = (PhysicalHashJoin *)plan.get();
+			PhysicalReservoir *reservoir = (PhysicalReservoir *)plan->children[0].get();
+			hash_join->is_impounding = &reservoir->is_impounding;
+		}
 	} else {
 		D_ASSERT(op.left_projection_map.empty());
 		if (left->estimated_cardinality <= client_config.nested_loop_join_threshold ||

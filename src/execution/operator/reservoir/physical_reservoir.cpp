@@ -1,10 +1,13 @@
 #include "duckdb/execution/operator/reservoir/physical_reservoir.hpp"
-#include "duckdb/parallel/task_scheduler.hpp"
-#include "duckdb/storage/temporary_memory_manager.hpp"
+
 #include "duckdb/common/types/column/column_data_collection.hpp"
 #include "duckdb/main/query_profiler.hpp"
+#include "duckdb/parallel/task_scheduler.hpp"
 #include "duckdb/parallel/thread_context.hpp"
 #include "duckdb/storage/buffer_manager.hpp"
+#include "duckdb/storage/temporary_memory_manager.hpp"
+
+#include <thread>
 
 namespace duckdb {
 
@@ -20,7 +23,7 @@ public:
 	ReservoirGlobalOperatorState(const PhysicalReservoir &op_p, ClientContext &context_p)
 	    : context(context_p), op(op_p),
 	      num_threads(NumericCast<idx_t>(TaskScheduler::GetScheduler(context).NumberOfThreads())),
-	      buffer_manager(BufferManager::GetBufferManager(context)) {
+	      buffer_manager(BufferManager::GetBufferManager(context)), active_local_states(0), scanned_data(false) {
 		global_buffer = make_uniq<ColumnDataCollection>(buffer_manager, op_p.types);
 	}
 
@@ -77,7 +80,7 @@ OperatorResultType PhysicalReservoir::Execute(ExecutionContext &context, DataChu
 		op_state.buffer->Append(input);
 	} else {
 		if (!op_state.buffer_merged) {
-			std::cerr << "[Reservoir] Merge Buffer Finally\n";
+			std::cerr << "[Reservoir::Execute] Pounding Water...\n";
 			auto guard = op_gstate.Lock();
 			op_gstate.local_buffers.push_back(std::move(op_state.buffer));
 
@@ -104,6 +107,7 @@ OperatorFinalizeResultType PhysicalReservoir::FinalExecute(ExecutionContext &con
 	auto &op_state = state_p.Cast<ReservoirOperatorState>();
 
 	if (!op_state.buffer_merged) {
+		std::cerr << "[Reservoir::FinalExecute] Pounding Water...\n";
 		auto guard = op_gstate.Lock();
 		op_gstate.local_buffers.push_back(std::move(op_state.buffer));
 
@@ -146,6 +150,7 @@ public:
 		auto &gstate = op.op_state->Cast<ReservoirGlobalOperatorState>();
 
 		idx_t count = gstate.global_buffer->Count();
+		std::cerr << "[Reservoir Source] Chunk Number: " << count << "\n";
 		return count / ((idx_t)STANDARD_VECTOR_SIZE * parallel_scan_chunk_count);
 	}
 
@@ -213,11 +218,17 @@ ReservoirGlobalSourceState::ReservoirGlobalSourceState(const PhysicalReservoir &
 }
 
 void ReservoirGlobalSourceState::Initialize(ReservoirGlobalOperatorState &op_gstate) {
+	// Spin wait for all local buffers are merged
+	while (op_gstate.local_buffers.size() < op_gstate.active_local_states) {
+		std::this_thread::yield();
+	}
+
 	auto guard = Lock();
 	if (global_stage != ReservoirSourceStage::INIT) {
 		// Another thread initialized
 		return;
 	}
+
 	PrepareScan(op_gstate);
 }
 
@@ -336,38 +347,20 @@ double PhysicalReservoir::GetProgress(ClientContext &context, GlobalSourceState 
 void PhysicalReservoir::BuildPipelines(Pipeline &current, MetaPipeline &meta_pipeline) {
 	op_state.reset();
 
-	// todo: the pipeline dependency is wrong currently.
-
-	// 'current' is the main pipeline: add this operator
+	// 'current' is the main pipeline: add this operator. It does not depend on any existing pipeline. [Correct]
 	auto &state = meta_pipeline.GetState();
 	state.AddPipelineOperator(current, *this);
-	children[0]->BuildPipelines(current, meta_pipeline);
+	current.ClearDependencies();
 
 	// save the last added pipeline to set up dependencies later (in case we need to add a child pipeline)
 	vector<shared_ptr<Pipeline>> pipelines_so_far;
 	meta_pipeline.GetPipelines(pipelines_so_far, false);
 	auto &last_pipeline = *pipelines_so_far.back();
 
-	meta_pipeline.CreateChildPipeline(current, *this, last_pipeline);
+	// continue building the current pipeline
+	children[0]->BuildPipelines(current, meta_pipeline);
 
-	//	// 1. First Path: Source --> ... --> sink
-	//	D_ASSERT(children.size() == 1);
-	//
-	//	// copy the pipeline
-	//	auto &new_current = meta_pipeline.CreateUnionPipeline(current, false);
-	//	// build the caching operator pipeline
-	//	state.AddPipelineOperator(new_current, *this);
-	//	children[0]->BuildPipelines(new_current, meta_pipeline);
-	//
-	//	// 2. Second Path: Source --> ... --> Reservoir, and Reservoir --> sink
-	//	op_gstate.reset();
-	//	D_ASSERT(children.size() == 1);
-	//
-	//	// single operator: the operator becomes the data source of the current pipeline
-	//	state.SetPipelineSource(current, *this);
-	//
-	//	// we create a new pipeline starting from the child
-	//	auto &child_meta_pipeline = meta_pipeline.CreateChildMetaPipeline(current, *this);
-	//	child_meta_pipeline.Build(*children[0]);
+	// becomes a source: Reservoir --> Result Collector. It depends on the main pipeline. [Correct]
+	meta_pipeline.CreateChildPipeline(current, *this, last_pipeline);
 }
 } // namespace duckdb
