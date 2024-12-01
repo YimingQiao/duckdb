@@ -56,7 +56,7 @@ public:
 	PerfectHashJoinStats perfect_join_statistics;
 
 	//! Reservoir Processing
-	mutable bool *is_impounding;
+	mutable atomic<bool> *is_impounding;
 
 public:
 	InsertionOrderPreservingMap<string> ParamsToString() const override;

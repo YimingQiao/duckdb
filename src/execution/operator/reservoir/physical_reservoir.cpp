@@ -80,7 +80,12 @@ OperatorResultType PhysicalReservoir::Execute(ExecutionContext &context, DataChu
 		op_state.buffer->Append(input);
 	} else {
 		if (!op_state.buffer_merged) {
-			std::cerr << "[Reservoir::Execute] Pounding Water...\n";
+			auto now = std::chrono::system_clock::now();
+			auto duration = now.time_since_epoch();
+			auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() % 1000000;
+			std::cerr << "[Reservoir::FinalExecute] Pounding Water...\tTicks: "
+			          << std::to_string(milliseconds) + "ms\n";
+
 			auto guard = op_gstate.Lock();
 			op_gstate.local_buffers.push_back(std::move(op_state.buffer));
 
@@ -107,9 +112,15 @@ OperatorFinalizeResultType PhysicalReservoir::FinalExecute(ExecutionContext &con
 	auto &op_state = state_p.Cast<ReservoirOperatorState>();
 
 	if (!op_state.buffer_merged) {
-		std::cerr << "[Reservoir::FinalExecute] Pounding Water...\n";
-		auto guard = op_gstate.Lock();
-		op_gstate.local_buffers.push_back(std::move(op_state.buffer));
+		auto now = std::chrono::system_clock::now();
+		auto duration = now.time_since_epoch();
+		auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() % 1000000;
+		std::cerr << "[Reservoir::FinalExecute] Pounding Water...\tTicks: " << std::to_string(milliseconds) + "ms\n";
+
+		{
+			auto guard = op_gstate.Lock();
+			op_gstate.local_buffers.push_back(std::move(op_state.buffer));
+		}
 
 		// if all local buffer have been collected
 		if (op_gstate.local_buffers.size() == op_gstate.active_local_states) {
@@ -150,7 +161,7 @@ public:
 		auto &gstate = op.op_state->Cast<ReservoirGlobalOperatorState>();
 
 		idx_t count = gstate.global_buffer->Count();
-		std::cerr << "[Reservoir Source] Chunk Number: " << count << "\n";
+		std::cerr << "[Reservoir Source] Row Number: " << count << "\n";
 		return count / ((idx_t)STANDARD_VECTOR_SIZE * parallel_scan_chunk_count);
 	}
 
@@ -328,8 +339,7 @@ SourceResultType PhysicalReservoir::GetData(ExecutionContext &context, DataChunk
 	if (gstate.global_stage != ReservoirSourceStage::DONE) {
 		if (!lstate.TaskFinished() || gstate.AssignTask(op_gstate, lstate)) {
 			lstate.ExecuteTask(op_gstate, gstate, chunk);
-		} else {
-			auto guard = gstate.Lock();
+		} else if (gstate.scan_chunk_done == gstate.scan_chunk_count) {
 			gstate.global_stage = ReservoirSourceStage::DONE;
 		}
 	}
