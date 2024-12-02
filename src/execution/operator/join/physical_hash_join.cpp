@@ -453,6 +453,13 @@ public:
 			}
 		}
 		SetTasks(std::move(finalize_tasks));
+
+		auto now = std::chrono::system_clock::now();
+		auto duration = now.time_since_epoch();
+		auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() % 1000000;
+		std::cerr << " [Open] Hash Table Real Build "
+		          << "\t#task/#thread: " + std::to_string(num_threads) + "/" + std::to_string(num_threads) +
+		                 "\tTick: " + std::to_string(milliseconds) + "ms\n";
 	}
 
 	void FinishEvent() override {
