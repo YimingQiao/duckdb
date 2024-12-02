@@ -189,7 +189,9 @@ public:
 		auto &gstate = op.sink_state->Cast<ReservoirGlobalSinkState>();
 
 		idx_t count = gstate.global_buffer->Count();
-		std::cerr << "[Reservoir Source] Row Number: " << count << "\n";
+		if (op.reservoir_debug) {
+			std::cerr << "[Reservoir Source] Row Number: " << count << "\n";
+		}
 		return count / ((idx_t)STANDARD_VECTOR_SIZE * parallel_scan_chunk_count);
 	}
 
