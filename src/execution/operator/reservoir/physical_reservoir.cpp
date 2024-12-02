@@ -131,8 +131,8 @@ SinkFinalizeType PhysicalReservoir::Finalize(Pipeline &pipeline, Event &event, C
 	auto &global_buffer = *sink.global_buffer;
 
 	// combine local buffers
-	for (auto &local_buf : sink.local_buffers) {
-		global_buffer.Combine(*local_buf);
+	for (auto &local_buffer : sink.local_buffers) {
+		global_buffer.Combine(*local_buffer);
 	}
 
 	sink.local_buffers.clear();
@@ -176,6 +176,7 @@ public:
 		auto &gstate = op.sink_state->Cast<ReservoirGlobalSinkState>();
 
 		idx_t count = gstate.global_buffer->Count();
+		std::cerr << "[Reservoir Source] Row Number: " << count << "\n";
 		return count / ((idx_t)STANDARD_VECTOR_SIZE * parallel_scan_chunk_count);
 	}
 
