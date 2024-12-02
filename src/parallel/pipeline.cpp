@@ -262,28 +262,6 @@ void Pipeline::ClearDependencies() {
 	dependencies.clear();
 }
 
-void Pipeline::CopyDependencies(shared_ptr<Pipeline> &other) {
-	D_ASSERT(other);
-
-	for (auto &weak_dep : other->dependencies) {
-		if (auto dep = weak_dep.lock()) {
-			// Add the dependency to this pipeline's dependencies if not already present
-			if (std::none_of(
-			        dependencies.begin(), dependencies.end(),
-			        [&dep](const weak_ptr<Pipeline> &weak_existing_dep) { return weak_existing_dep.lock() == dep; })) {
-				dependencies.push_back(weak_ptr<Pipeline>(dep));
-			}
-
-			// Add this pipeline as a parent to the dependency if not already present
-			if (std::none_of(dep->parents.begin(), dep->parents.end(), [this](const weak_ptr<Pipeline> &weak_parent) {
-				    return weak_parent.lock().get() == this;
-			    })) {
-				dep->parents.push_back(weak_ptr<Pipeline>(shared_from_this()));
-			}
-		}
-	}
-}
-
 string Pipeline::ToString() const {
 	TextTreeRenderer renderer;
 	return renderer.ToString(*this);

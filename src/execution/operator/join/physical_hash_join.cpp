@@ -453,6 +453,13 @@ public:
 			}
 		}
 		SetTasks(std::move(finalize_tasks));
+
+		auto now = std::chrono::system_clock::now();
+		auto duration = now.time_since_epoch();
+		auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() % 1000000;
+		std::cerr << " [Open] Hash Table Real Build "
+		          << "\t#task/#thread: " + std::to_string(num_threads) + "/" + std::to_string(num_threads) +
+		                 "\tTick: " + std::to_string(milliseconds) + "ms\n";
 	}
 
 	void FinishEvent() override {
@@ -464,7 +471,7 @@ public:
 			auto now = std::chrono::system_clock::now();
 			auto duration = now.time_since_epoch();
 			auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() % 1000000;
-			std::cerr << "[Physical Hash Join] Open the Reservoir\tTicks: " << std::to_string(milliseconds) + "ms\n";
+			std::cerr << "[PhysicalHashJoin] Open the Reservoir\tTicks: " << std::to_string(milliseconds) + "ms\n";
 		}
 	}
 
@@ -475,15 +482,6 @@ public:
 void HashJoinGlobalSinkState::ScheduleFinalize(Pipeline &pipeline, Event &event) {
 	if (hash_table->Count() == 0) {
 		hash_table->finalized = true;
-		if (op.is_impounding != nullptr) {
-			*op.is_impounding = false;
-
-			auto now = std::chrono::system_clock::now();
-			auto duration = now.time_since_epoch();
-			auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() % 1000000;
-			std::cerr << "[Physical Hash Join] Open the Reservoir\tTicks: " << std::to_string(milliseconds) + "ms\n";
-		}
-		return;
 	}
 	hash_table->InitializePointerTable();
 	auto new_event = make_shared_ptr<HashJoinFinalizeEvent>(pipeline, *this);

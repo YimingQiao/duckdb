@@ -84,12 +84,12 @@ OperatorResultType PhysicalReservoir::Execute(ExecutionContext &context, DataChu
 				auto now = std::chrono::system_clock::now();
 				auto duration = now.time_since_epoch();
 				auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() % 1000000;
-				std::cerr << "[Reservoir::FinalExecute] Pounding Water...\tTicks: "
-				          << std::to_string(milliseconds) + "ms\n";
+				std::cerr << "[Reservoir::Execute] Pounding Water...\tTicks: " << std::to_string(milliseconds) + "ms\n";
 			}
 
 			auto guard = op_gstate.Lock();
 			op_gstate.local_buffers.push_back(std::move(op_state.buffer));
+			op_state.buffer_merged = true;
 
 			// if all local buffer have been collected
 			if (op_gstate.local_buffers.size() == op_gstate.active_local_states) {
@@ -100,7 +100,6 @@ OperatorResultType PhysicalReservoir::Execute(ExecutionContext &context, DataChu
 					global_buffer.Combine(*local_buf);
 				}
 			}
-			op_state.buffer_merged = true;
 		}
 
 		chunk.Reference(input);
@@ -124,6 +123,7 @@ OperatorFinalizeResultType PhysicalReservoir::FinalExecute(ExecutionContext &con
 
 		auto guard = op_gstate.Lock();
 		op_gstate.local_buffers.push_back(std::move(op_state.buffer));
+		op_state.buffer_merged = true;
 
 		// if all local buffer have been collected
 		if (op_gstate.local_buffers.size() == op_gstate.active_local_states) {
@@ -133,7 +133,6 @@ OperatorFinalizeResultType PhysicalReservoir::FinalExecute(ExecutionContext &con
 			for (auto &local_buf : op_gstate.local_buffers) {
 				global_buffer.Combine(*local_buf);
 			}
-			op_state.buffer_merged = true;
 
 			// Spin wait for starting pounding water
 			while (is_impounding) {
