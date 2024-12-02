@@ -10,7 +10,6 @@ namespace duckdb {
 
 PhysicalReservoir::PhysicalReservoir(LogicalOperator &op, vector<LogicalType> types, idx_t estimated_cardinality)
     : PhysicalOperator(PhysicalOperatorType::RESERVOIR, std::move(types), estimated_cardinality), is_impounding(true) {
-	ptr_impounding = &is_impounding;
 }
 
 //===--------------------------------------------------------------------===//
@@ -25,9 +24,6 @@ public:
 	      temporary_memory_state(TemporaryMemoryManager::Get(context).Register(context)), finalized(false) {
 		global_buffer = make_uniq<ColumnDataCollection>(buffer_manager, op_p.types);
 	}
-
-	//	void ScheduleFinalize(Pipeline &pipeline, Event &event);
-	//	void InitializeProbeSpill();
 
 public:
 	ClientContext &context;
@@ -141,6 +137,10 @@ SinkFinalizeType PhysicalReservoir::Finalize(Pipeline &pipeline, Event &event, C
 
 	sink.local_buffers.clear();
 	sink.finalized = true;
+
+	// record how many chunks have been scanned
+	pipeline.RememberSourceState();
+
 	return SinkFinalizeType::READY;
 }
 
@@ -149,8 +149,6 @@ SinkFinalizeType PhysicalReservoir::Finalize(Pipeline &pipeline, Event &event, C
 //===--------------------------------------------------------------------===//
 OperatorResultType PhysicalReservoir::Execute(ExecutionContext &context, DataChunk &input, DataChunk &chunk,
                                               GlobalOperatorState &gstate, OperatorState &state) const {
-	*ptr_impounding = false;
-
 	chunk.Reference(input);
 	return OperatorResultType::NEED_MORE_INPUT;
 }
@@ -347,8 +345,7 @@ SourceResultType PhysicalReservoir::GetData(ExecutionContext &context, DataChunk
 	if (gstate.global_stage != ReservoirSourceStage::DONE) {
 		if (!lstate.TaskFinished() || gstate.AssignTask(sink, lstate)) {
 			lstate.ExecuteTask(sink, gstate, chunk);
-		} else {
-			auto guard = gstate.Lock();
+		} else if (gstate.scan_chunk_count == gstate.scan_chunk_done) {
 			gstate.global_stage = ReservoirSourceStage::DONE;
 		}
 	}
@@ -366,14 +363,14 @@ double PhysicalReservoir::GetProgress(ClientContext &context, GlobalSourceState 
 void PhysicalReservoir::BuildPipelines(Pipeline &current, MetaPipeline &meta_pipeline) {
 	op_state.reset();
 
-	auto &state = meta_pipeline.GetState();
-
 	// 1. First Path: Source --> ... --> Sink
 	D_ASSERT(children.size() == 1);
 
 	// copy the pipeline
 	auto &new_current = meta_pipeline.CreateUnionPipeline(current, false);
+
 	// build the caching operator pipeline
+	auto &state = meta_pipeline.GetState();
 	state.AddPipelineOperator(new_current, *this);
 	children[0]->BuildPipelines(new_current, meta_pipeline);
 
@@ -387,5 +384,10 @@ void PhysicalReservoir::BuildPipelines(Pipeline &current, MetaPipeline &meta_pip
 	// we create a new pipeline starting from the child
 	auto &child_meta_pipeline = meta_pipeline.CreateChildMetaPipeline(current, *this);
 	child_meta_pipeline.Build(*children[0]);
+
+	vector<shared_ptr<Pipeline>> pipelines;
+	child_meta_pipeline.GetPipelines(pipelines, false);
+	auto &last_pipeline = pipelines.back();
+	new_current.AddDependency(last_pipeline);
 }
 } // namespace duckdb

@@ -30,9 +30,7 @@ public:
 public:
 	PhysicalReservoir(LogicalOperator &op, vector<LogicalType> types, idx_t estimated_cardinality);
 
-	bool is_impounding;
-	// Hack: this is a trick to let us modify the variable is_impounding in a const function, i.e. Execute() const.
-	bool *ptr_impounding;
+	mutable atomic<bool> is_impounding;
 
 public:
 	// Operator interface

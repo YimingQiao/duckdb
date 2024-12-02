@@ -36,7 +36,8 @@ PhysicalHashJoin::PhysicalHashJoin(LogicalOperator &op, unique_ptr<PhysicalOpera
                                    PerfectHashJoinStats perfect_join_stats,
                                    unique_ptr<JoinFilterPushdownInfo> pushdown_info_p)
     : PhysicalComparisonJoin(op, PhysicalOperatorType::HASH_JOIN, std::move(cond), join_type, estimated_cardinality),
-      delim_types(std::move(delim_types)), perfect_join_statistics(std::move(perfect_join_stats)) {
+      delim_types(std::move(delim_types)), perfect_join_statistics(std::move(perfect_join_stats)),
+      is_impounding(nullptr) {
 
 	filter_pushdown = std::move(pushdown_info_p);
 
@@ -142,7 +143,7 @@ public:
 		hash_table = op.InitializeHashTable(context);
 
 		// For perfect hash join
-		perfect_join_executor = make_uniq<PerfectHashJoinExecutor>(op, *hash_table, op.perfect_join_statistics);
+		perfect_join_executor = nullptr;
 		// For external hash join
 		external = ClientConfig::GetConfig(context).GetSetting<DebugForceExternalSetting>(context);
 		// Set probe types
@@ -457,6 +458,14 @@ public:
 	void FinishEvent() override {
 		sink.hash_table->GetDataCollection().VerifyEverythingPinned();
 		sink.hash_table->finalized = true;
+		if (sink.op.is_impounding != nullptr) {
+			*sink.op.is_impounding = false;
+
+			auto now = std::chrono::system_clock::now();
+			auto duration = now.time_since_epoch();
+			auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() % 1000000;
+			std::cerr << "[Physical Hash Join] Open the Reservoir\tTicks: " << std::to_string(milliseconds) + "ms\n";
+		}
 	}
 
 	static constexpr idx_t PARALLEL_CONSTRUCT_THRESHOLD = 1048576;
@@ -714,7 +723,7 @@ SinkFinalizeType PhysicalHashJoin::Finalize(Pipeline &pipeline, Event &event, Cl
 	}
 
 	// check for possible perfect hash table
-	auto use_perfect_hash = sink.perfect_join_executor->CanDoPerfectHashJoin();
+	auto use_perfect_hash = false;
 	if (use_perfect_hash) {
 		D_ASSERT(ht.equality_types.size() == 1);
 		auto key_type = ht.equality_types[0];

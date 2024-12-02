@@ -86,7 +86,10 @@ unique_ptr<LocalSourceState> PhysicalTableScan::GetLocalSourceState(ExecutionCon
 }
 
 unique_ptr<GlobalSourceState> PhysicalTableScan::GetGlobalSourceState(ClientContext &context) const {
-	return make_uniq<TableScanGlobalSourceState>(context, *this);
+	if (global_source_state == nullptr) {
+		global_source_state = make_uniq<TableScanGlobalSourceState>(context, *this);
+	}
+	return std::move(global_source_state);
 }
 
 SourceResultType PhysicalTableScan::GetData(ExecutionContext &context, DataChunk &chunk,

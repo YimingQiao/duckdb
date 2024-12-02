@@ -51,6 +51,9 @@ public:
 	//! Contains a reference to dynamically generated table filters (through e.g. a join up in the tree)
 	shared_ptr<DynamicTableFilterSet> dynamic_filters;
 
+	//! Global Source State
+	mutable unique_ptr<GlobalSourceState> global_source_state;
+
 public:
 	string GetName() const override;
 	InsertionOrderPreservingMap<string> ParamsToString() const override;

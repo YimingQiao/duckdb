@@ -55,6 +55,9 @@ public:
 	//! Used in perfect hash join
 	PerfectHashJoinStats perfect_join_statistics;
 
+	//! Reservoir Processing
+	mutable atomic<bool> *is_impounding;
+
 public:
 	InsertionOrderPreservingMap<string> ParamsToString() const override;
 
