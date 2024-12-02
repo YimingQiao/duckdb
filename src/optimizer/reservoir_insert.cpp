@@ -8,9 +8,15 @@ unique_ptr<LogicalOperator> ReservoirInsert::Rewrite(unique_ptr<LogicalOperator>
 	for (idx_t i = 0; i < op->children.size(); i++) {
 		op->children[i] = Rewrite(std::move(op->children[i]));
 	}
+
+	if (op->children[0]->type == LogicalOperatorType::LOGICAL_GET) {
+		return op;
+	}
+
 	switch (op->type) {
-	case LogicalOperatorType::LOGICAL_COMPARISON_JOIN:
+	case LogicalOperatorType::LOGICAL_COMPARISON_JOIN: {
 		return DoInsert(unique_ptr_cast<LogicalOperator, LogicalComparisonJoin>(std::move(op)));
+	}
 	default:
 		return op;
 	}
