@@ -96,6 +96,8 @@ public:
 	void Print() const;
 	void PrintDependencies() const;
 
+	void RememberSourceState();
+
 	//! Returns query progress
 	bool GetProgress(double &current_percentage, idx_t &estimated_cardinality);
 

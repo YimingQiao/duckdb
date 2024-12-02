@@ -60,6 +60,9 @@ public:
 	//! Lock for (re)setting any of the operator states
 	mutex lock;
 
+	//! Global Source State
+	mutable unique_ptr<GlobalSourceState> global_source_state;
+
 public:
 	virtual string GetName() const;
 	virtual InsertionOrderPreservingMap<string> ParamsToString() const {

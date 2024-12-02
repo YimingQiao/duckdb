@@ -351,4 +351,17 @@ vector<reference<PhysicalOperator>> PipelineBuildState::GetPipelineOperators(Pip
 	return pipeline.operators;
 }
 
+void Pipeline::RememberSourceState() {
+	switch (source->type) {
+	case PhysicalOperatorType::TABLE_SCAN:
+	case PhysicalOperatorType::RESERVOIR: {
+		auto *scan = source.get();
+		scan->global_source_state = std::move(source_state);
+		break;
+	}
+	default:
+		break;
+	}
+}
+
 } // namespace duckdb
