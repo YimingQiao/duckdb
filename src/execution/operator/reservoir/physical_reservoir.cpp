@@ -55,7 +55,11 @@ public:
 
 class ReservoirLocalSinkState : public LocalSinkState {
 public:
-	ReservoirLocalSinkState(const PhysicalReservoir &op, ClientContext &context, ReservoirGlobalSinkState &gstate) {
+	const idx_t CHUNK_THRESHOLD = DEFAULT_ROW_GROUP_SIZE / DEFAULT_STANDARD_VECTOR_SIZE;
+
+public:
+	ReservoirLocalSinkState(const PhysicalReservoir &op, ClientContext &context, ReservoirGlobalSinkState &gstate)
+	    : num_chunk(0) {
 		auto &buffer_manager = BufferManager::GetBufferManager(context);
 		buffer = make_uniq<ColumnDataCollection>(buffer_manager, op.types);
 		gstate.active_local_states++;
@@ -64,6 +68,9 @@ public:
 public:
 	//! Thread-local buffer
 	unique_ptr<ColumnDataCollection> buffer;
+
+	//! chunk number
+	idx_t num_chunk;
 };
 
 unique_ptr<GlobalSinkState> PhysicalReservoir::GetGlobalSinkState(ClientContext &context) const {
@@ -81,10 +88,15 @@ SinkResultType PhysicalReservoir::Sink(ExecutionContext &context, DataChunk &chu
 
 	lstate.buffer->Append(chunk);
 
-	if (gstate.op.is_impounding) {
-		return SinkResultType::NEED_MORE_INPUT;
+	if (++lstate.num_chunk == lstate.CHUNK_THRESHOLD) {
+		lstate.num_chunk = 0;
+
+		if (!gstate.op.is_impounding) {
+			return SinkResultType::FINISHED;
+		}
 	}
-	return SinkResultType::FINISHED;
+
+	return SinkResultType::NEED_MORE_INPUT;
 }
 
 SinkCombineResultType PhysicalReservoir::Combine(ExecutionContext &context, OperatorSinkCombineInput &input) const {
