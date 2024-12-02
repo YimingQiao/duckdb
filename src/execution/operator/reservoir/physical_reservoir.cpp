@@ -122,10 +122,8 @@ OperatorFinalizeResultType PhysicalReservoir::FinalExecute(ExecutionContext &con
 			          << std::to_string(milliseconds) + "ms\n";
 		}
 
-		{
-			auto guard = op_gstate.Lock();
-			op_gstate.local_buffers.push_back(std::move(op_state.buffer));
-		}
+		auto guard = op_gstate.Lock();
+		op_gstate.local_buffers.push_back(std::move(op_state.buffer));
 
 		// if all local buffer have been collected
 		if (op_gstate.local_buffers.size() == op_gstate.active_local_states) {
@@ -135,8 +133,13 @@ OperatorFinalizeResultType PhysicalReservoir::FinalExecute(ExecutionContext &con
 			for (auto &local_buf : op_gstate.local_buffers) {
 				global_buffer.Combine(*local_buf);
 			}
+			op_state.buffer_merged = true;
+
+			// Spin wait for starting pounding water
+			while (is_impounding) {
+				std::this_thread::yield();
+			}
 		}
-		op_state.buffer_merged = true;
 	}
 
 	chunk.SetCardinality(0);
@@ -234,11 +237,6 @@ ReservoirGlobalSourceState::ReservoirGlobalSourceState(const PhysicalReservoir &
 }
 
 void ReservoirGlobalSourceState::Initialize(ReservoirGlobalOperatorState &op_gstate) {
-	// Spin wait for all local buffers are merged
-	while (op_gstate.local_buffers.size() < op_gstate.active_local_states) {
-		std::this_thread::yield();
-	}
-
 	auto guard = Lock();
 	if (global_stage != ReservoirSourceStage::INIT) {
 		// Another thread initialized
@@ -333,7 +331,6 @@ SourceResultType PhysicalReservoir::GetData(ExecutionContext &context, DataChunk
 	auto &gstate = input.global_state.Cast<ReservoirGlobalSourceState>();
 	auto &lstate = input.local_state.Cast<ReservoirLocalSourceState>();
 	op_gstate.scanned_data = true;
-	is_impounding = false;
 
 	if (gstate.global_stage == ReservoirSourceStage::INIT) {
 		gstate.Initialize(op_gstate);
