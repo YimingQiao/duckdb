@@ -9,10 +9,6 @@ unique_ptr<LogicalOperator> ReservoirInsert::Rewrite(unique_ptr<LogicalOperator>
 		op->children[i] = Rewrite(std::move(op->children[i]));
 	}
 
-	if (op->children[0]->type == LogicalOperatorType::LOGICAL_GET) {
-		return op;
-	}
-
 	switch (op->type) {
 	case LogicalOperatorType::LOGICAL_COMPARISON_JOIN: {
 		return DoInsert(unique_ptr_cast<LogicalOperator, LogicalComparisonJoin>(std::move(op)));
@@ -46,6 +42,10 @@ bool HasEquality(vector<JoinCondition> &conds, idx_t &range_count) {
 }
 
 unique_ptr<LogicalOperator> ReservoirInsert::DoInsert(unique_ptr<LogicalComparisonJoin> op) {
+	if (op->children[0]->type == LogicalOperatorType::LOGICAL_GET) {
+		return std::move(op);
+	}
+
 	idx_t has_range = 0;
 	bool has_equality = HasEquality(op->conditions, has_range);
 
