@@ -266,11 +266,6 @@ unique_ptr<LogicalOperator> Optimizer::Optimize(unique_ptr<LogicalOperator> plan
 	}
 
 	Planner::VerifyPlan(context, plan);
-
-	if (plan->type == LogicalOperatorType::LOGICAL_PROJECTION) {
-		std::cerr << plan->ToString() << "\n";
-	}
-
 	return std::move(plan);
 }
 

@@ -32,7 +32,7 @@ public:
 
 	mutable atomic<bool> is_impounding;
 
-	const bool reservoir_debug = false;
+	const bool reservoir_debug = true;
 
 public:
 	// Operator interface

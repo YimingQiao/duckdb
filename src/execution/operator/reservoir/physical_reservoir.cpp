@@ -377,21 +377,19 @@ double PhysicalReservoir::GetProgress(ClientContext &context, GlobalSourceState 
 // Pipeline Construction
 //===--------------------------------------------------------------------===//
 void PhysicalReservoir::BuildPipelines(Pipeline &current, MetaPipeline &meta_pipeline) {
-	// 1. First Pipeline: Source --> ... --> Sink
 	D_ASSERT(children.size() == 1);
 	op_state.reset();
-
-	auto &state = meta_pipeline.GetState();
-	auto &new_current = meta_pipeline.CreateUnionPipeline(current, false);
-	state.AddPipelineOperator(new_current, *this);
-	children[0]->BuildPipelines(new_current, meta_pipeline);
-
-	// 2. Second and Third Pipeline: Source --> ... --> Reservoir, and Reservoir --> Sink
-	D_ASSERT(children.size() == 1);
 	sink_state.reset();
 
+	// First Pipeline: Source --> ... --> Sink (without reservoir)
+	auto &state = meta_pipeline.GetState();
+	auto &operator_pipeline = meta_pipeline.CreateUnionPipeline(current, false);
+	children[0]->BuildPipelines(operator_pipeline, meta_pipeline);
+
+	// Second Pipeline: Reservoir --> ... --> Sink
 	state.SetPipelineSource(current, *this);
 
+	// Third Pipeline: Source --> ... --> Reservoir
 	auto &child_meta_pipeline = meta_pipeline.CreateChildMetaPipeline(current, *this);
 	child_meta_pipeline.Build(*children[0]);
 
@@ -399,6 +397,6 @@ void PhysicalReservoir::BuildPipelines(Pipeline &current, MetaPipeline &meta_pip
 	vector<shared_ptr<Pipeline>> pipelines;
 	child_meta_pipeline.GetPipelines(pipelines, false);
 	auto &last_pipeline = pipelines.back();
-	new_current.AddDependency(last_pipeline);
+	operator_pipeline.AddDependency(last_pipeline);
 }
 } // namespace duckdb
