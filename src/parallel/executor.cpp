@@ -205,6 +205,12 @@ void Executor::ScheduleEventsInternal(ScheduleEventData &event_data) {
 	for (auto &meta_pipeline : event_data.meta_pipelines) {
 		for (auto &entry : meta_pipeline->GetDependencies()) {
 			auto &pipeline = entry.first.get();
+
+			// Hack: the reservoir should start at once
+			if (pipeline.sink->type == PhysicalOperatorType::RESERVOIR) {
+				continue;
+			}
+
 			auto root_entry = event_map.find(pipeline);
 			D_ASSERT(root_entry != event_map.end());
 			auto &pipeline_stack = root_entry->second;
