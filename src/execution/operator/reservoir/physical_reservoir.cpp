@@ -1,10 +1,12 @@
 #include "duckdb/execution/operator/reservoir/physical_reservoir.hpp"
-#include "duckdb/parallel/task_scheduler.hpp"
-#include "duckdb/storage/temporary_memory_manager.hpp"
+
 #include "duckdb/common/types/column/column_data_collection.hpp"
+#include "duckdb/execution/operator/reservoir/function_profiler.hpp"
 #include "duckdb/main/query_profiler.hpp"
+#include "duckdb/parallel/task_scheduler.hpp"
 #include "duckdb/parallel/thread_context.hpp"
 #include "duckdb/storage/buffer_manager.hpp"
+#include "duckdb/storage/temporary_memory_manager.hpp"
 
 namespace duckdb {
 
@@ -83,18 +85,26 @@ unique_ptr<LocalSinkState> PhysicalReservoir::GetLocalSinkState(ExecutionContext
 }
 
 SinkResultType PhysicalReservoir::Sink(ExecutionContext &context, DataChunk &chunk, OperatorSinkInput &input) const {
+	auto start_time = std::chrono::high_resolution_clock::now();
+
 	auto &gstate = input.global_state.Cast<ReservoirGlobalSinkState>();
 	auto &lstate = input.local_state.Cast<ReservoirLocalSinkState>();
 
 	lstate.buffer->Append(chunk);
 
-	if (++lstate.num_chunk == lstate.CHUNK_THRESHOLD) {
-		lstate.num_chunk = 0;
+	if (!BLOCKED) {
+		if (++lstate.num_chunk == lstate.CHUNK_THRESHOLD) {
+			lstate.num_chunk = 0;
 
-		if (!gstate.op.is_impounding) {
-			return SinkResultType::FINISHED;
+			if (!gstate.op.is_impounding) {
+				return SinkResultType::FINISHED;
+			}
 		}
 	}
+
+	auto end_time = std::chrono::high_resolution_clock::now();
+	uint64_t duration_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time).count();
+	BeeProfiler::Get().InsertStatRecord("[PhysicalReservoir] Sink", duration_ns);
 
 	return SinkResultType::NEED_MORE_INPUT;
 }
@@ -153,6 +163,11 @@ SinkFinalizeType PhysicalReservoir::Finalize(Pipeline &pipeline, Event &event, C
 
 	// record how many chunks have been scanned
 	pipeline.RememberSourceState();
+
+	auto now = std::chrono::system_clock::now();
+	auto duration = now.time_since_epoch();
+	auto tick = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() % 1000000;
+	std::cerr << "[PhysicalReservoir] Sink Finalize Ends " + std::to_string(tick) + "ms\n";
 
 	return SinkFinalizeType::READY;
 }
@@ -347,6 +362,8 @@ void ReservoirLocalSourceState::ScanBuf(ReservoirGlobalSinkState &sink, Reservoi
 
 SourceResultType PhysicalReservoir::GetData(ExecutionContext &context, DataChunk &chunk,
                                             OperatorSourceInput &input) const {
+	auto start_time = std::chrono::high_resolution_clock::now();
+
 	auto &sink = sink_state->Cast<ReservoirGlobalSinkState>();
 	auto &gstate = input.global_state.Cast<ReservoirGlobalSourceState>();
 	auto &lstate = input.local_state.Cast<ReservoirLocalSourceState>();
@@ -366,6 +383,10 @@ SourceResultType PhysicalReservoir::GetData(ExecutionContext &context, DataChunk
 		}
 	}
 
+	auto end_time = std::chrono::high_resolution_clock::now();
+	uint64_t duration_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time).count();
+	BeeProfiler::Get().InsertStatRecord("[PhysicalReservoir] GetData", duration_ns);
+
 	return chunk.size() == 0 ? SourceResultType::FINISHED : SourceResultType::HAVE_MORE_OUTPUT;
 }
 
@@ -378,25 +399,38 @@ double PhysicalReservoir::GetProgress(ClientContext &context, GlobalSourceState 
 //===--------------------------------------------------------------------===//
 void PhysicalReservoir::BuildPipelines(Pipeline &current, MetaPipeline &meta_pipeline) {
 	D_ASSERT(children.size() == 1);
-	op_state.reset();
-	sink_state.reset();
+	if (BLOCKED) {
+		sink_state.reset();
 
-	// First Pipeline: Source --> ... --> Sink (without reservoir)
-	auto &state = meta_pipeline.GetState();
-	auto &operator_pipeline = meta_pipeline.CreateUnionPipeline(current, false);
-	children[0]->BuildPipelines(operator_pipeline, meta_pipeline);
+		auto &state = meta_pipeline.GetState();
 
-	// Second Pipeline: Reservoir --> ... --> Sink
-	state.SetPipelineSource(current, *this);
+		// Second Pipeline: Reservoir --> ... --> Sink
+		state.SetPipelineSource(current, *this);
 
-	// Third Pipeline: Source --> ... --> Reservoir
-	auto &child_meta_pipeline = meta_pipeline.CreateChildMetaPipeline(current, *this);
-	child_meta_pipeline.Build(*children[0]);
+		// Third Pipeline: Source --> ... --> Reservoir
+		auto &child_meta_pipeline = meta_pipeline.CreateChildMetaPipeline(current, *this);
+		child_meta_pipeline.Build(*children[0]);
+	} else {
+		op_state.reset();
+		sink_state.reset();
 
-	// The first pipeline depends on the second pipeline
-	vector<shared_ptr<Pipeline>> pipelines;
-	child_meta_pipeline.GetPipelines(pipelines, false);
-	auto &last_pipeline = pipelines.back();
-	operator_pipeline.AddDependency(last_pipeline);
+		// First Pipeline: Source --> ... --> Sink (without reservoir)
+		auto &state = meta_pipeline.GetState();
+		auto &operator_pipeline = meta_pipeline.CreateUnionPipeline(current, false);
+		children[0]->BuildPipelines(operator_pipeline, meta_pipeline);
+
+		// Second Pipeline: Reservoir --> ... --> Sink
+		state.SetPipelineSource(current, *this);
+
+		// Third Pipeline: Source --> ... --> Reservoir
+		auto &child_meta_pipeline = meta_pipeline.CreateChildMetaPipeline(current, *this);
+		child_meta_pipeline.Build(*children[0]);
+
+		// The first pipeline depends on the third pipeline
+		vector<shared_ptr<Pipeline>> pipelines;
+		child_meta_pipeline.GetPipelines(pipelines, false);
+		auto &last_pipeline = pipelines.back();
+		operator_pipeline.AddDependency(last_pipeline);
+	}
 }
 } // namespace duckdb

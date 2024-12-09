@@ -27,6 +27,8 @@ class PhysicalReservoir : public PhysicalOperator {
 public:
 	static constexpr const PhysicalOperatorType TYPE = PhysicalOperatorType::RESERVOIR;
 
+	static constexpr const bool BLOCKED = false;
+
 public:
 	PhysicalReservoir(LogicalOperator &op, vector<LogicalType> types, idx_t estimated_cardinality);
 

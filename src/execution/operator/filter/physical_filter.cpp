@@ -1,7 +1,10 @@
 #include "duckdb/execution/operator/filter/physical_filter.hpp"
+
 #include "duckdb/execution/expression_executor.hpp"
-#include "duckdb/planner/expression/bound_conjunction_expression.hpp"
+#include "duckdb/execution/operator/reservoir/function_profiler.hpp"
 #include "duckdb/parallel/thread_context.hpp"
+#include "duckdb/planner/expression/bound_conjunction_expression.hpp"
+
 namespace duckdb {
 
 PhysicalFilter::PhysicalFilter(vector<LogicalType> types, vector<unique_ptr<Expression>> select_list,
@@ -41,6 +44,8 @@ unique_ptr<OperatorState> PhysicalFilter::GetOperatorState(ExecutionContext &con
 
 OperatorResultType PhysicalFilter::ExecuteInternal(ExecutionContext &context, DataChunk &input, DataChunk &chunk,
                                                    GlobalOperatorState &gstate, OperatorState &state_p) const {
+	auto start_time = std::chrono::high_resolution_clock::now();
+
 	auto &state = state_p.Cast<FilterState>();
 	idx_t result_count = state.executor.SelectExpression(input, state.sel);
 	if (result_count == input.size()) {
@@ -49,6 +54,11 @@ OperatorResultType PhysicalFilter::ExecuteInternal(ExecutionContext &context, Da
 	} else {
 		chunk.Slice(input, state.sel, result_count);
 	}
+
+	auto end_time = std::chrono::high_resolution_clock::now();
+	uint64_t duration_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time).count();
+	BeeProfiler::Get().InsertStatRecord("[PhysicalFilter] Execute", duration_ns);
+
 	return OperatorResultType::NEED_MORE_INPUT;
 }
 

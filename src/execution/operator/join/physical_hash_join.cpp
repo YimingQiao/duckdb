@@ -4,6 +4,7 @@
 #include "duckdb/common/types/value_map.hpp"
 #include "duckdb/execution/expression_executor.hpp"
 #include "duckdb/execution/operator/aggregate/ungrouped_aggregate_state.hpp"
+#include "duckdb/execution/operator/reservoir/function_profiler.hpp"
 #include "duckdb/function/aggregate/distributive_function_utils.hpp"
 #include "duckdb/function/aggregate/distributive_functions.hpp"
 #include "duckdb/function/function_binder.hpp"
@@ -311,6 +312,8 @@ void JoinFilterPushdownInfo::Sink(DataChunk &chunk, JoinFilterLocalState &lstate
 }
 
 SinkResultType PhysicalHashJoin::Sink(ExecutionContext &context, DataChunk &chunk, OperatorSinkInput &input) const {
+	auto start_time = std::chrono::high_resolution_clock::now();
+
 	auto &lstate = input.local_state.Cast<HashJoinLocalSinkState>();
 
 	// resolve the join keys for the right chunk
@@ -333,6 +336,10 @@ SinkResultType PhysicalHashJoin::Sink(ExecutionContext &context, DataChunk &chun
 		ht.Build(lstate.append_state, lstate.join_keys, lstate.payload_chunk);
 	}
 
+	auto end_time = std::chrono::high_resolution_clock::now();
+	uint64_t duration_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time).count();
+	BeeProfiler::Get().InsertStatRecord("[PhysicalHashJoin] Sink/Partition", duration_ns);
+
 	return SinkResultType::NEED_MORE_INPUT;
 }
 
@@ -341,6 +348,8 @@ void JoinFilterPushdownInfo::Combine(JoinFilterGlobalState &gstate, JoinFilterLo
 }
 
 SinkCombineResultType PhysicalHashJoin::Combine(ExecutionContext &context, OperatorSinkCombineInput &input) const {
+	auto start_time = std::chrono::high_resolution_clock::now();
+
 	auto &gstate = input.global_state.Cast<HashJoinGlobalSinkState>();
 	auto &lstate = input.local_state.Cast<HashJoinLocalSinkState>();
 
@@ -358,6 +367,10 @@ SinkCombineResultType PhysicalHashJoin::Combine(ExecutionContext &context, Opera
 	if (filter_pushdown) {
 		filter_pushdown->Combine(*gstate.global_filter_state, *lstate.local_filter_state);
 	}
+
+	auto end_time = std::chrono::high_resolution_clock::now();
+	uint64_t duration_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time).count();
+	BeeProfiler::Get().InsertStatRecord("[PhysicalHashJoin] Combine " + std::to_string(uint64_t(this)), duration_ns);
 
 	return SinkCombineResultType::FINISHED;
 }
@@ -685,6 +698,8 @@ void JoinFilterPushdownInfo::PushFilters(ClientContext &context, JoinHashTable &
 
 SinkFinalizeType PhysicalHashJoin::Finalize(Pipeline &pipeline, Event &event, ClientContext &context,
                                             OperatorSinkFinalizeInput &input) const {
+	auto start_time = std::chrono::high_resolution_clock::now();
+
 	auto &sink = input.global_state.Cast<HashJoinGlobalSinkState>();
 	auto &ht = *sink.hash_table;
 
@@ -745,6 +760,11 @@ SinkFinalizeType PhysicalHashJoin::Finalize(Pipeline &pipeline, Event &event, Cl
 	if (ht.Count() == 0 && EmptyResultIfRHSIsEmpty()) {
 		return SinkFinalizeType::NO_OUTPUT_POSSIBLE;
 	}
+
+	auto end_time = std::chrono::high_resolution_clock::now();
+	uint64_t duration_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time).count();
+	BeeProfiler::Get().InsertStatRecord("[PhysicalHashJoin] Finalize " + std::to_string(uint64_t(this)), duration_ns);
+
 	return SinkFinalizeType::READY;
 }
 
@@ -802,6 +822,8 @@ unique_ptr<OperatorState> PhysicalHashJoin::GetOperatorState(ExecutionContext &c
 
 OperatorResultType PhysicalHashJoin::ExecuteInternal(ExecutionContext &context, DataChunk &input, DataChunk &chunk,
                                                      GlobalOperatorState &gstate, OperatorState &state_p) const {
+	auto start_time = std::chrono::high_resolution_clock::now();
+
 	auto &state = state_p.Cast<HashJoinOperatorState>();
 	auto &sink = sink_state->Cast<HashJoinGlobalSinkState>();
 	D_ASSERT(sink.finalized);
@@ -853,8 +875,16 @@ OperatorResultType PhysicalHashJoin::ExecuteInternal(ExecutionContext &context, 
 
 	if (state.scan_structure.PointersExhausted() && chunk.size() == 0) {
 		state.scan_structure.is_null = true;
+
+		auto end_time = std::chrono::high_resolution_clock::now();
+		uint64_t duration_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time).count();
+		BeeProfiler::Get().InsertStatRecord("[PhysicalHashJoin] Execute (Need More Input)", duration_ns);
 		return OperatorResultType::NEED_MORE_INPUT;
 	}
+
+	auto end_time = std::chrono::high_resolution_clock::now();
+	uint64_t duration_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time).count();
+	BeeProfiler::Get().InsertStatRecord("[PhysicalHashJoin] Execute (Have More Output)", duration_ns);
 	return OperatorResultType::HAVE_MORE_OUTPUT;
 }
 
