@@ -878,13 +878,15 @@ OperatorResultType PhysicalHashJoin::ExecuteInternal(ExecutionContext &context, 
 
 		auto end_time = std::chrono::high_resolution_clock::now();
 		uint64_t duration_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time).count();
-		BeeProfiler::Get().InsertStatRecord("[PhysicalHashJoin] Execute (Need More Input)", duration_ns);
+		BeeProfiler::Get().InsertStatRecord(
+		    "[PhysicalHashJoin] Execute (Need More Input) " + std::to_string(uint64_t(this)), duration_ns);
 		return OperatorResultType::NEED_MORE_INPUT;
 	}
 
 	auto end_time = std::chrono::high_resolution_clock::now();
 	uint64_t duration_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time).count();
-	BeeProfiler::Get().InsertStatRecord("[PhysicalHashJoin] Execute (Have More Output)", duration_ns);
+	BeeProfiler::Get().InsertStatRecord(
+	    "[PhysicalHashJoin] Execute (Have More Output) " + std::to_string(uint64_t(this)), duration_ns);
 	return OperatorResultType::HAVE_MORE_OUTPUT;
 }
 
