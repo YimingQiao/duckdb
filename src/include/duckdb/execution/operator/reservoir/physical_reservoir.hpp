@@ -22,7 +22,7 @@ namespace duckdb {
 //    Thus, the reservoir stops sink, and then execute as a normal operator.
 // 3. When the all data from source is probed. The reservoir works as a source, outputting its stored data.
 //
-// I think it is a very clear design.
+// I think it is a very clean design.
 class PhysicalReservoir : public PhysicalOperator {
 public:
 	static constexpr const PhysicalOperatorType TYPE = PhysicalOperatorType::RESERVOIR;
