@@ -135,7 +135,7 @@ private:
 	optional_ptr<PhysicalOperator> sink;
 
 	//! The global source state
-	unique_ptr<GlobalSourceState> source_state;
+	shared_ptr<GlobalSourceState> source_state;
 
 	//! The parent pipelines (i.e. pipelines that are dependent on this pipeline to finish)
 	vector<weak_ptr<Pipeline>> parents;

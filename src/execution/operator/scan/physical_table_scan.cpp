@@ -89,7 +89,7 @@ shared_ptr<GlobalSourceState> PhysicalTableScan::GetGlobalSourceState(ClientCont
 	if (global_source_state == nullptr) {
 		global_source_state = make_shared_ptr<TableScanGlobalSourceState>(context, *this);
 	}
-	return std::move(global_source_state);
+	return global_source_state;
 }
 
 SourceResultType PhysicalTableScan::GetData(ExecutionContext &context, DataChunk &chunk,

@@ -104,7 +104,8 @@ SinkResultType PhysicalReservoir::Sink(ExecutionContext &context, DataChunk &chu
 
 	auto end_time = std::chrono::high_resolution_clock::now();
 	uint64_t duration_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time).count();
-	BeeProfiler::Get().InsertStatRecord("[PhysicalReservoir] Sink", duration_ns);
+	BeeProfiler::Get().InsertStatRecord("[PhysicalReservoir] Sink\t(0x" + std::to_string(uint64_t(this)) + ")",
+	                                    duration_ns);
 
 	return SinkResultType::NEED_MORE_INPUT;
 }
@@ -160,9 +161,6 @@ SinkFinalizeType PhysicalReservoir::Finalize(Pipeline &pipeline, Event &event, C
 
 	sink.local_buffers.clear();
 	sink.finalized = true;
-
-	// record how many chunks have been scanned
-	pipeline.RememberSourceState();
 
 	auto now = std::chrono::system_clock::now();
 	auto duration = now.time_since_epoch();
@@ -258,11 +256,11 @@ public:
 	unique_ptr<ReservoirScanState> scan_state;
 };
 
-unique_ptr<GlobalSourceState> PhysicalReservoir::GetGlobalSourceState(ClientContext &context) const {
+shared_ptr<GlobalSourceState> PhysicalReservoir::GetGlobalSourceState(ClientContext &context) const {
 	if (global_source_state == nullptr) {
 		global_source_state = make_uniq<ReservoirGlobalSourceState>(*this, context);
 	}
-	return std::move(global_source_state);
+	return global_source_state;
 }
 
 unique_ptr<LocalSourceState> PhysicalReservoir::GetLocalSourceState(ExecutionContext &context,
@@ -388,7 +386,8 @@ SourceResultType PhysicalReservoir::GetData(ExecutionContext &context, DataChunk
 
 	auto end_time = std::chrono::high_resolution_clock::now();
 	uint64_t duration_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time).count();
-	BeeProfiler::Get().InsertStatRecord("[PhysicalReservoir] GetData", duration_ns);
+	BeeProfiler::Get().InsertStatRecord("[PhysicalReservoir] GetData\t(0x" + std::to_string(uint64_t(this)) + ")",
+	                                    duration_ns);
 
 	return chunk.size() == 0 ? SourceResultType::FINISHED : SourceResultType::HAVE_MORE_OUTPUT;
 }
@@ -456,7 +455,7 @@ void PhysicalReservoir::BuildReservoirPath(duckdb::Pipeline &current, duckdb::Me
 	state.SetPipelineSource(current, *this);
 
 	// ------------------------------ Third Pipeline Group: ... --> Reservoir --> ... ------------------------------
-	auto &operator_pipeline = meta_pipeline.CreateUnionPipeline(current, false);
+	auto &operator_pipeline = meta_pipeline.CreateUnionPipeline(current, true);
 
 	PhysicalOperator *op = children[0].get();
 	while (op->type != PhysicalOperatorType::RESERVOIR) {
