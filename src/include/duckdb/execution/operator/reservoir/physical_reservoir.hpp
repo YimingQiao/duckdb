@@ -34,8 +34,6 @@ public:
 
 	mutable atomic<bool> is_impounding;
 
-	const bool reservoir_debug = true;
-
 public:
 	// Operator interface
 	OperatorResultType Execute(ExecutionContext &context, DataChunk &input, DataChunk &chunk,

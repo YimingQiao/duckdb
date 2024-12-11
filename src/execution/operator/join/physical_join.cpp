@@ -60,7 +60,7 @@ void PhysicalJoin::BuildJoinPipelines(Pipeline &current, MetaPipeline &meta_pipe
 	// continue building the current pipeline on the LHS (probe side)
 	op.children[0]->BuildPipelines(current, meta_pipeline);
 
-	if (last_child_ptr) {
+	if (last_child_ptr && op.children[0]->type != PhysicalOperatorType::RESERVOIR) {
 		// the pointer was set, set up the dependencies
 		meta_pipeline.AddRecursiveDependencies(dependencies, *last_child_ptr);
 	}

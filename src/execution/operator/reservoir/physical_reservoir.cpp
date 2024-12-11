@@ -167,7 +167,7 @@ SinkFinalizeType PhysicalReservoir::Finalize(Pipeline &pipeline, Event &event, C
 	auto now = std::chrono::system_clock::now();
 	auto duration = now.time_since_epoch();
 	auto tick = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() % 1000000;
-	std::cerr << "[PhysicalReservoir] Sink Finalize Ends " + std::to_string(tick) + "ms\n";
+	std::cerr << "[PhysicalReservoir]\t(0x" << uint64_t(&sink.op) << ")\tSink Finalize Ends\tTicks: " << tick << "ms\n";
 
 	return SinkFinalizeType::READY;
 }
@@ -204,9 +204,8 @@ public:
 		auto &gstate = op.sink_state->Cast<ReservoirGlobalSinkState>();
 
 		idx_t count = gstate.global_buffer->Count();
-		if (op.reservoir_debug) {
-			std::cerr << "[Reservoir Source] Row Number: " << count << "\n";
-		}
+		std::cerr << "[PhysicalReservoir]\t(0x" << uint64_t(&op) << ")\tSource Row Number: " << count << "\n";
+
 		return count / ((idx_t)STANDARD_VECTOR_SIZE * parallel_scan_chunk_count);
 	}
 
