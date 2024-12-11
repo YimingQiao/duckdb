@@ -379,7 +379,7 @@ SourceResultType PhysicalReservoir::GetData(ExecutionContext &context, DataChunk
 	}
 
 	// If the reservoir opens, we stop the pipeline
-	if (pipeline_sink_operator != nullptr && lstate.TaskFinished()) {
+	if (pipeline_sink_operator && lstate.TaskFinished()) {
 		auto *reservoir = static_cast<PhysicalReservoir *>(pipeline_sink_operator);
 		if (!reservoir->is_impounding) {
 			chunk.Reset();
