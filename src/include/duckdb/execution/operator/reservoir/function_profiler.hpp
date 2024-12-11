@@ -51,6 +51,7 @@ public:
 
 		// -------------------------------- Print Timing Results --------------------------------
 		std::vector<std::string> keys;
+		keys.reserve(values_.size());
 		for (const auto &pair : values_) {
 			keys.push_back(pair.first);
 		}
@@ -58,12 +59,6 @@ public:
 			std::sort(keys.begin(), keys.end());
 			std::cerr << "-------\n";
 			for (const auto &key : keys) {
-				if (key.find("TableScan") != std::string::npos && key.find("in_mem") == std::string::npos) {
-					continue;
-				}
-				if (key.find("#Tuple") != std::string::npos) {
-					continue;
-				}
 				double time = values_.at(key) / double(1e9);
 				uint64_t calling_times = calling_times_.at(key);
 				double avg = time / calling_times;
