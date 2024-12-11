@@ -45,7 +45,7 @@ public:
 		}
 	}
 
-	vector<unique_ptr<GlobalSourceState>> global_states;
+	vector<shared_ptr<GlobalSourceState>> global_states;
 
 	idx_t MaxThreads() override {
 		return 1;
@@ -150,8 +150,8 @@ unique_ptr<LocalSourceState> PhysicalPositionalScan::GetLocalSourceState(Executi
 	return make_uniq<PositionalScanLocalSourceState>(context, gstate.Cast<PositionalScanGlobalSourceState>(), *this);
 }
 
-unique_ptr<GlobalSourceState> PhysicalPositionalScan::GetGlobalSourceState(ClientContext &context) const {
-	return make_uniq<PositionalScanGlobalSourceState>(context, *this);
+shared_ptr<GlobalSourceState> PhysicalPositionalScan::GetGlobalSourceState(ClientContext &context) const {
+	return make_shared_ptr<PositionalScanGlobalSourceState>(context, *this);
 }
 
 SourceResultType PhysicalPositionalScan::GetData(ExecutionContext &context, DataChunk &output,

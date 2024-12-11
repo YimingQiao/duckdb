@@ -446,8 +446,8 @@ public:
 	bool initialized = false;
 };
 
-unique_ptr<GlobalSourceState> PhysicalTopN::GetGlobalSourceState(ClientContext &context) const {
-	return make_uniq<TopNOperatorState>();
+shared_ptr<GlobalSourceState> PhysicalTopN::GetGlobalSourceState(ClientContext &context) const {
+	return make_shared_ptr<TopNOperatorState>();
 }
 
 SourceResultType PhysicalTopN::GetData(ExecutionContext &context, DataChunk &chunk, OperatorSourceInput &input) const {

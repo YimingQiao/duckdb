@@ -1000,8 +1000,8 @@ public:
 	unique_ptr<JoinHTScanState> full_outer_scan_state;
 };
 
-unique_ptr<GlobalSourceState> PhysicalHashJoin::GetGlobalSourceState(ClientContext &context) const {
-	return make_uniq<HashJoinGlobalSourceState>(*this, context);
+shared_ptr<GlobalSourceState> PhysicalHashJoin::GetGlobalSourceState(ClientContext &context) const {
+	return make_shared_ptr<HashJoinGlobalSourceState>(*this, context);
 }
 
 unique_ptr<LocalSourceState> PhysicalHashJoin::GetLocalSourceState(ExecutionContext &context,

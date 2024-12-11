@@ -927,9 +927,9 @@ public:
 	atomic<idx_t> next_right;
 };
 
-unique_ptr<GlobalSourceState> PhysicalIEJoin::GetGlobalSourceState(ClientContext &context) const {
+shared_ptr<GlobalSourceState> PhysicalIEJoin::GetGlobalSourceState(ClientContext &context) const {
 	auto &gsink = sink_state->Cast<IEJoinGlobalState>();
-	return make_uniq<IEJoinGlobalSourceState>(*this, gsink);
+	return make_shared_ptr<IEJoinGlobalSourceState>(*this, gsink);
 }
 
 unique_ptr<LocalSourceState> PhysicalIEJoin::GetLocalSourceState(ExecutionContext &context,

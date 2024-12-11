@@ -161,8 +161,8 @@ public:
 	BatchedChunkScanState scan_state;
 };
 
-unique_ptr<GlobalSourceState> PhysicalLimit::GetGlobalSourceState(ClientContext &context) const {
-	return make_uniq<LimitSourceState>();
+shared_ptr<GlobalSourceState> PhysicalLimit::GetGlobalSourceState(ClientContext &context) const {
+	return make_shared_ptr<LimitSourceState>();
 }
 
 SourceResultType PhysicalLimit::GetData(ExecutionContext &context, DataChunk &chunk, OperatorSourceInput &input) const {

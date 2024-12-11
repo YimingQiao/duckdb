@@ -821,8 +821,8 @@ public:
 	}
 };
 
-unique_ptr<GlobalSourceState> PhysicalHashAggregate::GetGlobalSourceState(ClientContext &context) const {
-	return make_uniq<HashAggregateGlobalSourceState>(context, *this);
+shared_ptr<GlobalSourceState> PhysicalHashAggregate::GetGlobalSourceState(ClientContext &context) const {
+	return make_shared_ptr<HashAggregateGlobalSourceState>(context, *this);
 }
 
 class HashAggregateLocalSourceState : public LocalSourceState {

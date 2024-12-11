@@ -188,8 +188,8 @@ public:
 	ColumnDataScanState scan_state;
 };
 
-unique_ptr<GlobalSourceState> PhysicalUpdate::GetGlobalSourceState(ClientContext &context) const {
-	return make_uniq<UpdateSourceState>(*this);
+shared_ptr<GlobalSourceState> PhysicalUpdate::GetGlobalSourceState(ClientContext &context) const {
+	return make_shared_ptr<UpdateSourceState>(*this);
 }
 
 SourceResultType PhysicalUpdate::GetData(ExecutionContext &context, DataChunk &chunk,

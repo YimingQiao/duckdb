@@ -182,8 +182,8 @@ public:
 	idx_t ht_scan_position;
 };
 
-unique_ptr<GlobalSourceState> PhysicalPerfectHashAggregate::GetGlobalSourceState(ClientContext &context) const {
-	return make_uniq<PerfectHashAggregateState>();
+shared_ptr<GlobalSourceState> PhysicalPerfectHashAggregate::GetGlobalSourceState(ClientContext &context) const {
+	return make_shared_ptr<PerfectHashAggregateState>();
 }
 
 SourceResultType PhysicalPerfectHashAggregate::GetData(ExecutionContext &context, DataChunk &chunk,

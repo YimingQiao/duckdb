@@ -182,9 +182,9 @@ public:
 	}
 };
 
-unique_ptr<GlobalSourceState> PhysicalPartitionedAggregate::GetGlobalSourceState(ClientContext &context) const {
+shared_ptr<GlobalSourceState> PhysicalPartitionedAggregate::GetGlobalSourceState(ClientContext &context) const {
 	auto &gstate = sink_state->Cast<PartitionedAggregateGlobalSinkState>();
-	return make_uniq<PartitionedAggregateGlobalSourceState>(gstate);
+	return make_shared_ptr<PartitionedAggregateGlobalSourceState>(gstate);
 }
 
 SourceResultType PhysicalPartitionedAggregate::GetData(ExecutionContext &context, DataChunk &chunk,

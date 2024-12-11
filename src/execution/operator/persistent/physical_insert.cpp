@@ -702,8 +702,8 @@ public:
 	ColumnDataScanState scan_state;
 };
 
-unique_ptr<GlobalSourceState> PhysicalInsert::GetGlobalSourceState(ClientContext &context) const {
-	return make_uniq<InsertSourceState>(*this);
+shared_ptr<GlobalSourceState> PhysicalInsert::GetGlobalSourceState(ClientContext &context) const {
+	return make_shared_ptr<InsertSourceState>(*this);
 }
 
 SourceResultType PhysicalInsert::GetData(ExecutionContext &context, DataChunk &chunk,

@@ -42,8 +42,8 @@ public:
 	ColumnDataLocalScanState local_scan_state;
 };
 
-unique_ptr<GlobalSourceState> PhysicalColumnDataScan::GetGlobalSourceState(ClientContext &context) const {
-	return make_uniq<PhysicalColumnDataGlobalScanState>(*collection);
+shared_ptr<GlobalSourceState> PhysicalColumnDataScan::GetGlobalSourceState(ClientContext &context) const {
+	return make_shared_ptr<PhysicalColumnDataGlobalScanState>(*collection);
 }
 
 unique_ptr<LocalSourceState> PhysicalColumnDataScan::GetLocalSourceState(ExecutionContext &,

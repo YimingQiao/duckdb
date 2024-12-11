@@ -699,8 +699,8 @@ public:
 	}
 };
 
-unique_ptr<GlobalSourceState> PhysicalPiecewiseMergeJoin::GetGlobalSourceState(ClientContext &context) const {
-	return make_uniq<PiecewiseJoinScanState>(*this);
+shared_ptr<GlobalSourceState> PhysicalPiecewiseMergeJoin::GetGlobalSourceState(ClientContext &context) const {
+	return make_shared_ptr<PiecewiseJoinScanState>(*this);
 }
 
 SourceResultType PhysicalPiecewiseMergeJoin::GetData(ExecutionContext &context, DataChunk &result,

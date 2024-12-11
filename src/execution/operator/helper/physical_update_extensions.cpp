@@ -38,8 +38,8 @@ SourceResultType PhysicalUpdateExtensions::GetData(ExecutionContext &context, Da
 	                                                        : SourceResultType::HAVE_MORE_OUTPUT;
 }
 
-unique_ptr<GlobalSourceState> PhysicalUpdateExtensions::GetGlobalSourceState(ClientContext &context) const {
-	auto res = make_uniq<UpdateExtensionsGlobalState>();
+shared_ptr<GlobalSourceState> PhysicalUpdateExtensions::GetGlobalSourceState(ClientContext &context) const {
+	auto res = make_shared_ptr<UpdateExtensionsGlobalState>();
 
 	if (info->extensions_to_update.empty()) {
 		// Update all

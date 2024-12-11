@@ -38,7 +38,7 @@ public:
 public:
 	// Source interface
 	SourceResultType GetData(ExecutionContext &context, DataChunk &chunk, OperatorSourceInput &input) const override;
-	unique_ptr<GlobalSourceState> GetGlobalSourceState(ClientContext &context) const override;
+	shared_ptr<GlobalSourceState> GetGlobalSourceState(ClientContext &context) const override;
 
 	bool IsSource() const override {
 		return true;

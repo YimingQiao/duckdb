@@ -444,8 +444,8 @@ public:
 	OuterJoinLocalScanState scan_state;
 };
 
-unique_ptr<GlobalSourceState> PhysicalNestedLoopJoin::GetGlobalSourceState(ClientContext &context) const {
-	return make_uniq<NestedLoopJoinGlobalScanState>(*this);
+shared_ptr<GlobalSourceState> PhysicalNestedLoopJoin::GetGlobalSourceState(ClientContext &context) const {
+	return make_shared_ptr<NestedLoopJoinGlobalScanState>(*this);
 }
 
 unique_ptr<LocalSourceState> PhysicalNestedLoopJoin::GetLocalSourceState(ExecutionContext &context,

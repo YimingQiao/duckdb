@@ -121,8 +121,8 @@ public:
 	bool finished;
 };
 
-unique_ptr<GlobalSourceState> PhysicalExport::GetGlobalSourceState(ClientContext &context) const {
-	return make_uniq<ExportSourceState>();
+shared_ptr<GlobalSourceState> PhysicalExport::GetGlobalSourceState(ClientContext &context) const {
+	return make_shared_ptr<ExportSourceState>();
 }
 
 void PhysicalExport::ExtractEntries(ClientContext &context, vector<reference<SchemaCatalogEntry>> &schema_list,

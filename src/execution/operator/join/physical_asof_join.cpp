@@ -675,9 +675,9 @@ public:
 	}
 };
 
-unique_ptr<GlobalSourceState> PhysicalAsOfJoin::GetGlobalSourceState(ClientContext &context) const {
+shared_ptr<GlobalSourceState> PhysicalAsOfJoin::GetGlobalSourceState(ClientContext &context) const {
 	auto &gsink = sink_state->Cast<AsOfGlobalSinkState>();
-	return make_uniq<AsOfGlobalSourceState>(gsink);
+	return make_shared_ptr<AsOfGlobalSourceState>(gsink);
 }
 
 class AsOfLocalSourceState : public LocalSourceState {

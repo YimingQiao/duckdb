@@ -113,8 +113,8 @@ public:
 	idx_t current_offset;
 };
 
-unique_ptr<GlobalSourceState> PhysicalLimitPercent::GetGlobalSourceState(ClientContext &context) const {
-	return make_uniq<LimitPercentOperatorState>(*this);
+shared_ptr<GlobalSourceState> PhysicalLimitPercent::GetGlobalSourceState(ClientContext &context) const {
+	return make_shared_ptr<LimitPercentOperatorState>(*this);
 }
 
 SourceResultType PhysicalLimitPercent::GetData(ExecutionContext &context, DataChunk &chunk,

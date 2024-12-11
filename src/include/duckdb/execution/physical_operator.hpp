@@ -61,7 +61,7 @@ public:
 	mutex lock;
 
 	//! Global Source State
-	mutable unique_ptr<GlobalSourceState> global_source_state;
+	mutable shared_ptr<GlobalSourceState> global_source_state;
 
 public:
 	virtual string GetName() const;
@@ -114,7 +114,7 @@ public:
 	// Source interface
 	virtual unique_ptr<LocalSourceState> GetLocalSourceState(ExecutionContext &context,
 	                                                         GlobalSourceState &gstate) const;
-	virtual unique_ptr<GlobalSourceState> GetGlobalSourceState(ClientContext &context) const;
+	virtual shared_ptr<GlobalSourceState> GetGlobalSourceState(ClientContext &context) const;
 	virtual SourceResultType GetData(ExecutionContext &context, DataChunk &chunk, OperatorSourceInput &input) const;
 
 	virtual OperatorPartitionData GetPartitionData(ExecutionContext &context, DataChunk &chunk,

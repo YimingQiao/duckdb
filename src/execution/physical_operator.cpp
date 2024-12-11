@@ -106,8 +106,8 @@ unique_ptr<LocalSourceState> PhysicalOperator::GetLocalSourceState(ExecutionCont
 	return make_uniq<LocalSourceState>();
 }
 
-unique_ptr<GlobalSourceState> PhysicalOperator::GetGlobalSourceState(ClientContext &context) const {
-	return make_uniq<GlobalSourceState>();
+shared_ptr<GlobalSourceState> PhysicalOperator::GetGlobalSourceState(ClientContext &context) const {
+	return make_shared_ptr<GlobalSourceState>();
 }
 
 // LCOV_EXCL_START

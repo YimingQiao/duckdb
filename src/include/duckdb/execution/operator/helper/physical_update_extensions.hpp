@@ -38,7 +38,7 @@ public:
 
 	unique_ptr<UpdateExtensionsInfo> info;
 
-	unique_ptr<GlobalSourceState> GetGlobalSourceState(ClientContext &context) const override;
+	shared_ptr<GlobalSourceState> GetGlobalSourceState(ClientContext &context) const override;
 
 public:
 	// Source interface

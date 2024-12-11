@@ -218,9 +218,9 @@ public:
 	idx_t total_batches;
 };
 
-unique_ptr<GlobalSourceState> PhysicalOrder::GetGlobalSourceState(ClientContext &context) const {
+shared_ptr<GlobalSourceState> PhysicalOrder::GetGlobalSourceState(ClientContext &context) const {
 	auto &sink = this->sink_state->Cast<OrderGlobalSinkState>();
-	return make_uniq<PhysicalOrderGlobalSourceState>(sink);
+	return make_shared_ptr<PhysicalOrderGlobalSourceState>(sink);
 }
 
 class PhysicalOrderLocalSourceState : public LocalSourceState {

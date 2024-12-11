@@ -251,8 +251,8 @@ public:
 	OuterJoinLocalScanState scan_state;
 };
 
-unique_ptr<GlobalSourceState> PhysicalBlockwiseNLJoin::GetGlobalSourceState(ClientContext &context) const {
-	return make_uniq<BlockwiseNLJoinGlobalScanState>(*this);
+shared_ptr<GlobalSourceState> PhysicalBlockwiseNLJoin::GetGlobalSourceState(ClientContext &context) const {
+	return make_shared_ptr<BlockwiseNLJoinGlobalScanState>(*this);
 }
 
 unique_ptr<LocalSourceState> PhysicalBlockwiseNLJoin::GetLocalSourceState(ExecutionContext &context,

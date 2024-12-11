@@ -92,8 +92,8 @@ public:
 	ColumnDataScanState scan_state;
 };
 
-unique_ptr<GlobalSourceState> PhysicalDelete::GetGlobalSourceState(ClientContext &context) const {
-	return make_uniq<DeleteSourceState>(*this);
+shared_ptr<GlobalSourceState> PhysicalDelete::GetGlobalSourceState(ClientContext &context) const {
+	return make_shared_ptr<DeleteSourceState>(*this);
 }
 
 SourceResultType PhysicalDelete::GetData(ExecutionContext &context, DataChunk &chunk,
