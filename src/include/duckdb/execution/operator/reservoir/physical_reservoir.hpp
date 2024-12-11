@@ -78,9 +78,11 @@ public:
 	}
 
 public:
-	//! It builds two path
-	//! 1. source --> ... --> sink
-	//! 2. Source --> ... --> Reservoir, and Reservoir --> Sink
 	void BuildPipelines(Pipeline &current, MetaPipeline &meta_pipeline) override;
+
+	MetaPipeline *reservoir_meta_pipeline;
+
+private:
+	void BuildReservoirPath(Pipeline &current, MetaPipeline &meta_pipeline);
 };
 } // namespace duckdb

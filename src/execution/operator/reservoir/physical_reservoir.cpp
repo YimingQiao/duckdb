@@ -399,7 +399,9 @@ double PhysicalReservoir::GetProgress(ClientContext &context, GlobalSourceState 
 //===--------------------------------------------------------------------===//
 void PhysicalReservoir::BuildPipelines(Pipeline &current, MetaPipeline &meta_pipeline) {
 	D_ASSERT(children.size() == 1);
+
 	if (BLOCKED) {
+		// it is a sink
 		sink_state.reset();
 
 		auto &state = meta_pipeline.GetState();
@@ -410,27 +412,59 @@ void PhysicalReservoir::BuildPipelines(Pipeline &current, MetaPipeline &meta_pip
 		// Third Pipeline: Source --> ... --> Reservoir
 		auto &child_meta_pipeline = meta_pipeline.CreateChildMetaPipeline(current, *this);
 		child_meta_pipeline.Build(*children[0]);
-	} else {
-		op_state.reset();
-		sink_state.reset();
 
-		// First Pipeline: Source --> ... --> Sink (without reservoir)
-		auto &state = meta_pipeline.GetState();
-		auto &operator_pipeline = meta_pipeline.CreateUnionPipeline(current, false);
-		children[0]->BuildPipelines(operator_pipeline, meta_pipeline);
-
-		// Second Pipeline: Reservoir --> ... --> Sink
-		state.SetPipelineSource(current, *this);
-
-		// Third Pipeline: Source --> ... --> Reservoir
-		auto &child_meta_pipeline = meta_pipeline.CreateChildMetaPipeline(current, *this);
-		child_meta_pipeline.Build(*children[0]);
-
-		// The first pipeline depends on the third pipeline
-		vector<shared_ptr<Pipeline>> pipelines;
-		child_meta_pipeline.GetPipelines(pipelines, false);
-		auto &last_pipeline = pipelines.back();
-		operator_pipeline.AddDependency(last_pipeline);
+		return;
 	}
+
+	op_state.reset();
+	sink_state.reset();
+
+	// ------------------------------ First Pipeline Group: ... --> ... --> Reservoir ------------------------------
+	reservoir_meta_pipeline = &meta_pipeline.CreateChildMetaPipeline(current, *this);
+	reservoir_meta_pipeline->Build(*children[0]);
+
+	// ------------------------------ Second Pipeline Group: Reservoir --> ... --> ... ------------------------------
+	auto &state = meta_pipeline.GetState();
+	state.SetPipelineSource(current, *this);
+
+	// ------------------------------ Third Pipeline Group: ... --> Reservoir --> ... ------------------------------
+	auto &operator_pipeline = meta_pipeline.CreateUnionPipeline(current, false);
+
+	PhysicalOperator *op = children[0].get();
+	while (op->type != PhysicalOperatorType::RESERVOIR) {
+		if (op->children.empty()) {
+			state.SetPipelineSource(operator_pipeline, *op);
+			return;
+		}
+
+		state.AddPipelineOperator(operator_pipeline, *op);
+		op = op->children[0].get();
+	}
+	static_cast<PhysicalReservoir *>(op)->BuildReservoirPath(operator_pipeline, meta_pipeline);
+}
+
+void PhysicalReservoir::BuildReservoirPath(duckdb::Pipeline &current, duckdb::MetaPipeline &meta_pipeline) {
+	D_ASSERT(children.size() == 1);
+
+	current.AddDependency(reservoir_meta_pipeline->GetBasePipeline());
+
+	// ------------------------------ Second Pipeline Group: Reservoir --> ... --> ... ------------------------------
+	auto &state = meta_pipeline.GetState();
+	state.SetPipelineSource(current, *this);
+
+	// ------------------------------ Third Pipeline Group: ... --> Reservoir --> ... ------------------------------
+	auto &operator_pipeline = meta_pipeline.CreateUnionPipeline(current, false);
+
+	PhysicalOperator *op = children[0].get();
+	while (op->type != PhysicalOperatorType::RESERVOIR) {
+		if (op->children.empty()) {
+			state.SetPipelineSource(operator_pipeline, *op);
+			return;
+		}
+
+		state.AddPipelineOperator(operator_pipeline, *op);
+		op = op->children[0].get();
+	}
+	static_cast<PhysicalReservoir *>(op)->BuildReservoirPath(operator_pipeline, meta_pipeline);
 }
 } // namespace duckdb
