@@ -259,7 +259,10 @@ public:
 };
 
 unique_ptr<GlobalSourceState> PhysicalReservoir::GetGlobalSourceState(ClientContext &context) const {
-	return make_uniq<ReservoirGlobalSourceState>(*this, context);
+	if (global_source_state == nullptr) {
+		global_source_state = make_uniq<ReservoirGlobalSourceState>(*this, context);
+	}
+	return std::move(global_source_state);
 }
 
 unique_ptr<LocalSourceState> PhysicalReservoir::GetLocalSourceState(ExecutionContext &context,

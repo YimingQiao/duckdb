@@ -42,8 +42,7 @@ bool HasEquality(vector<JoinCondition> &conds, idx_t &range_count) {
 }
 
 unique_ptr<LogicalOperator> ReservoirInsert::DoInsert(unique_ptr<LogicalComparisonJoin> op) {
-	if (op->children[0]->type == LogicalOperatorType::LOGICAL_GET ||
-	    op->children[0]->type == LogicalOperatorType::LOGICAL_COMPARISON_JOIN) {
+	if (op->children[0]->type == LogicalOperatorType::LOGICAL_GET) {
 		return std::move(op);
 	}
 
