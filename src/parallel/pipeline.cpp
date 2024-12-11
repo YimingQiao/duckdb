@@ -5,6 +5,8 @@
 #include "duckdb/common/tree_renderer/text_tree_renderer.hpp"
 #include "duckdb/execution/executor.hpp"
 #include "duckdb/execution/operator/aggregate/physical_ungrouped_aggregate.hpp"
+#include "duckdb/execution/operator/reservoir/physical_reservoir.hpp"
+#include "duckdb/execution/operator/reservoir/thread_scheduler.hpp"
 #include "duckdb/execution/operator/scan/physical_table_scan.hpp"
 #include "duckdb/execution/operator/set/physical_recursive_cte.hpp"
 #include "duckdb/main/client_context.hpp"
@@ -217,6 +219,16 @@ void Pipeline::Reset() {
 		}
 	}
 	ResetSource(false);
+
+	// the source should know if the reservoir pounds.
+	if (sink && source) {
+		source->pipeline_sink_operator = nullptr;
+		if (sink->type == PhysicalOperatorType::RESERVOIR) {
+			source->pipeline_sink_operator = sink.get();
+			sink->pipeline_source_operator = source.get();
+		}
+	}
+
 	// we no longer reset source here because this function is no longer guaranteed to be called by the main thread
 	// source reset needs to be called by the main thread because resetting a source may call into clients like R
 	initialized = true;

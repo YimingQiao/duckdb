@@ -92,7 +92,7 @@ SinkResultType PhysicalReservoir::Sink(ExecutionContext &context, DataChunk &chu
 
 	lstate.buffer->Append(chunk);
 
-	if (!BLOCKED) {
+	if (!BLOCKED && pipeline_source_operator->type != PhysicalOperatorType::RESERVOIR) {
 		if (++lstate.num_chunk == lstate.CHUNK_THRESHOLD) {
 			lstate.num_chunk = 0;
 
@@ -201,7 +201,7 @@ public:
 		D_ASSERT(op.sink_state);
 		auto &gstate = op.sink_state->Cast<ReservoirGlobalSinkState>();
 
-		idx_t count = gstate.global_buffer->Count();
+		idx_t count = gstate.global_buffer->Count() - scanned_row;
 		std::cerr << "[PhysicalReservoir]\t(0x" + std::to_string(uint64_t(&op)) +
 		                 ")\tSource Row Number: " + std::to_string(count) + "\n";
 
@@ -221,6 +221,8 @@ public:
 	idx_t scan_chunks_per_thread = DConstants::INVALID_INDEX;
 
 	idx_t parallel_scan_chunk_count;
+
+	atomic<idx_t> scanned_row;
 };
 
 struct ReservoirScanState {
@@ -270,7 +272,7 @@ unique_ptr<LocalSourceState> PhysicalReservoir::GetLocalSourceState(ExecutionCon
 }
 
 ReservoirGlobalSourceState::ReservoirGlobalSourceState(const PhysicalReservoir &op, const ClientContext &context)
-    : op(op), global_stage(ReservoirSourceStage::INIT), parallel_scan_chunk_count(1) {
+    : op(op), global_stage(ReservoirSourceStage::INIT), parallel_scan_chunk_count(1), scanned_row(0) {
 }
 
 void ReservoirGlobalSourceState::Initialize(ReservoirGlobalSinkState &sink) {
@@ -374,6 +376,15 @@ SourceResultType PhysicalReservoir::GetData(ExecutionContext &context, DataChunk
 		gstate.Initialize(sink);
 	}
 
+	// If the reservoir opens, we stop the pipeline
+	if (pipeline_sink_operator != nullptr && lstate.TaskFinished()) {
+		auto *reservoir = static_cast<PhysicalReservoir *>(pipeline_sink_operator);
+		if (!reservoir->is_impounding) {
+			chunk.Reset();
+			return SourceResultType::FINISHED;
+		}
+	}
+
 	// Any call to GetData must produce tuples, otherwise the pipeline executor thinks that we're done
 	// Therefore, we loop until we've produced tuples, or until the operator is actually done
 	if (gstate.global_stage != ReservoirSourceStage::DONE) {
@@ -383,6 +394,8 @@ SourceResultType PhysicalReservoir::GetData(ExecutionContext &context, DataChunk
 			gstate.global_stage = ReservoirSourceStage::DONE;
 		}
 	}
+
+	gstate.scanned_row += chunk.size();
 
 	auto end_time = std::chrono::high_resolution_clock::now();
 	uint64_t duration_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time).count();
