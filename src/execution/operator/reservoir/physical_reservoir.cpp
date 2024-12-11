@@ -293,7 +293,9 @@ void ReservoirGlobalSourceState::PrepareScan(ReservoirGlobalSinkState &sink) {
 	scan_chunk_count = buf.ChunkCount();
 	scan_chunk_done = 0;
 
-	scan_chunks_per_thread = MaxValue<idx_t>((scan_chunk_count + sink.num_threads - 1) / sink.num_threads, 1);
+	// scan_chunks_per_thread = MaxValue<idx_t>((scan_chunk_count + sink.num_threads - 1) / sink.num_threads, 1);
+
+	scan_chunks_per_thread = 4;
 
 	global_stage = ReservoirSourceStage::SCAN_BUFFER;
 }
