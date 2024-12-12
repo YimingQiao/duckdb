@@ -225,7 +225,19 @@ PipelineExecuteResult PipelineExecutor::Execute(idx_t max_chunks) {
 			if (!next_batch_blocked) {
 				// "Regular" path: fetch a chunk from the source and push it through the pipeline
 				source_chunk.Reset();
-				source_result = FetchFromSource(source_chunk);
+
+				// if the sink is a reservoir, we need to check if it opens
+				if (pipeline.sink->type == PhysicalOperatorType::RESERVOIR &&
+				    n_processed_chunks == DEFAULT_ROW_GROUP_SIZE / DEFAULT_STANDARD_VECTOR_SIZE) {
+					n_processed_chunks = 0;
+					auto *reservoir = static_cast<PhysicalReservoir *>(pipeline.sink.get());
+					source_result = (reservoir->is_impounding || reservoir->BLOCKED) ? FetchFromSource(source_chunk)
+					                                                                 : SourceResultType::FINISHED;
+				} else {
+					source_result = FetchFromSource(source_chunk);
+				}
+				++n_processed_chunks;
+
 				if (source_result == SourceResultType::BLOCKED) {
 					return PipelineExecuteResult::INTERRUPTED;
 				}

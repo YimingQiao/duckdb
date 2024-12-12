@@ -62,10 +62,6 @@ public:
 
 	//! Global Source State
 	mutable shared_ptr<GlobalSourceState> global_source_state;
-	//! Reservoir Sink Status
-	PhysicalOperator *pipeline_sink_operator;
-	//! Reservoir Sink Status
-	PhysicalOperator *pipeline_source_operator;
 
 public:
 	virtual string GetName() const;

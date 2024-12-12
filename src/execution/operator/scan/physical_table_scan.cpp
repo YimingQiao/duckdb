@@ -71,25 +71,14 @@ class TableScanLocalSourceState : public LocalSourceState {
 public:
 	TableScanLocalSourceState(ExecutionContext &context, TableScanGlobalSourceState &gstate,
 	                          const PhysicalTableScan &op) {
-		sink_is_impounding = true;
-		if (op.pipeline_sink_operator != nullptr) {
-			auto *reservoir = static_cast<PhysicalReservoir *>(op.pipeline_sink_operator);
-			sink_is_impounding = reservoir->is_impounding;
-		}
-
-		if (sink_is_impounding) {
-			if (op.function.init_local) {
-				TableFunctionInitInput input(op.bind_data.get(), op.column_ids, op.projection_ids,
-				                             gstate.GetTableFilters(op), op.extra_info.sample_options);
-				local_state = op.function.init_local(context, input, gstate.global_state.get());
-			}
+		if (op.function.init_local) {
+			TableFunctionInitInput input(op.bind_data.get(), op.column_ids, op.projection_ids,
+			                             gstate.GetTableFilters(op), op.extra_info.sample_options);
+			local_state = op.function.init_local(context, input, gstate.global_state.get());
 		}
 	}
 
 	unique_ptr<LocalTableFunctionState> local_state;
-
-	//! early stop
-	bool sink_is_impounding;
 };
 
 unique_ptr<LocalSourceState> PhysicalTableScan::GetLocalSourceState(ExecutionContext &context,
@@ -109,11 +98,6 @@ SourceResultType PhysicalTableScan::GetData(ExecutionContext &context, DataChunk
 	D_ASSERT(!column_ids.empty());
 	auto &gstate = input.global_state.Cast<TableScanGlobalSourceState>();
 	auto &state = input.local_state.Cast<TableScanLocalSourceState>();
-
-	if (!state.sink_is_impounding) {
-		chunk.Reset();
-		return SourceResultType::FINISHED;
-	}
 
 	TableFunctionInput data(bind_data.get(), state.local_state.get(), gstate.global_state.get());
 	if (function.function) {

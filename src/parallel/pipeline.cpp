@@ -219,16 +219,6 @@ void Pipeline::Reset() {
 		}
 	}
 	ResetSource(false);
-
-	// the source should know if the reservoir pounds.
-	if (sink && source) {
-		source->pipeline_sink_operator = nullptr;
-		if (sink->type == PhysicalOperatorType::RESERVOIR) {
-			source->pipeline_sink_operator = sink.get();
-			sink->pipeline_source_operator = source.get();
-		}
-	}
-
 	// we no longer reset source here because this function is no longer guaranteed to be called by the main thread
 	// source reset needs to be called by the main thread because resetting a source may call into clients like R
 	initialized = true;

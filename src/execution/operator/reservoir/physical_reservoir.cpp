@@ -88,16 +88,6 @@ SinkResultType PhysicalReservoir::Sink(ExecutionContext &context, DataChunk &chu
 
 	lstate.buffer->Append(chunk);
 
-	if (!BLOCKED) {
-		if (++lstate.num_chunk == lstate.CHUNK_THRESHOLD) {
-			lstate.num_chunk = 0;
-
-			if (!gstate.op.is_impounding) {
-				return SinkResultType::FINISHED;
-			}
-		}
-	}
-
 	auto end_time = std::chrono::high_resolution_clock::now();
 	uint64_t duration_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time).count();
 	BeeProfiler::Get().InsertStatRecord("[PhysicalReservoir] Sink\t(0x" + std::to_string(uint64_t(this)) + ")",
@@ -285,7 +275,7 @@ void ReservoirGlobalSourceState::PrepareScan(ReservoirGlobalSinkState &sink) {
 	scan_chunk_done = 0;
 	scanned_row = 0;
 
-	scan_chunks_per_task = 1;
+	scan_chunks_per_task = DEFAULT_ROW_GROUP_SIZE / DEFAULT_STANDARD_VECTOR_SIZE;
 
 	global_stage = ReservoirSourceStage::SCAN_BUFFER;
 }
@@ -370,15 +360,6 @@ SourceResultType PhysicalReservoir::GetData(ExecutionContext &context, DataChunk
 	if (!lstate.TaskFinished()) {
 		lstate.ExecuteTask(sink, gstate, chunk);
 	} else {
-		// early stop?
-		if (pipeline_sink_operator) {
-			auto *reservoir = static_cast<PhysicalReservoir *>(pipeline_sink_operator);
-			if (!reservoir->is_impounding) {
-				chunk.Reset();
-				return SourceResultType::FINISHED;
-			}
-		}
-
 		if (gstate.AssignTask(sink, lstate)) {
 			lstate.ExecuteTask(sink, gstate, chunk);
 		} else if (gstate.scan_chunk_count == gstate.scan_chunk_done) {

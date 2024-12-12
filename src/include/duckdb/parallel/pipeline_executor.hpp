@@ -8,13 +8,13 @@
 
 #pragma once
 
+#include "duckdb/common/stack.hpp"
 #include "duckdb/common/types/data_chunk.hpp"
+#include "duckdb/execution/execution_context.hpp"
+#include "duckdb/execution/physical_operator.hpp"
 #include "duckdb/parallel/interrupt.hpp"
 #include "duckdb/parallel/pipeline.hpp"
-#include "duckdb/execution/physical_operator.hpp"
 #include "duckdb/parallel/thread_context.hpp"
-#include "duckdb/execution/execution_context.hpp"
-#include "duckdb/common/stack.hpp"
 
 #include <functional>
 
@@ -170,6 +170,10 @@ private:
 	//! Number of times the Sink/Source will block before actually returning data
 	int debug_blocked_target_count = 1;
 #endif
+
+public:
+	// reservoir support
+	idx_t n_processed_chunks = 0;
 };
 
 } // namespace duckdb
