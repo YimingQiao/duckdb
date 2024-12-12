@@ -88,7 +88,7 @@ SinkResultType PhysicalReservoir::Sink(ExecutionContext &context, DataChunk &chu
 
 	lstate.buffer->Append(chunk);
 
-	if (!BLOCKED && pipeline_source_operator->type != PhysicalOperatorType::RESERVOIR) {
+	if (!BLOCKED) {
 		if (++lstate.num_chunk == lstate.CHUNK_THRESHOLD) {
 			lstate.num_chunk = 0;
 
@@ -161,7 +161,7 @@ SinkFinalizeType PhysicalReservoir::Finalize(Pipeline &pipeline, Event &event, C
 	auto now = std::chrono::system_clock::now();
 	auto duration = now.time_since_epoch();
 	auto tick = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() % 1000000;
-	std::cerr << "[PhysicalReservoir]\t(0x" << uint64_t(&sink.op) << ")\tSink Finalize Ends\tTicks: " << tick << "ms\n";
+	std::cerr << "[PhysicalReservoir] (0x" << uint64_t(&sink.op) << ")\tSink Finalize Ends\tTicks: " << tick << "ms\n";
 
 	return SinkFinalizeType::READY;
 }
@@ -191,7 +191,7 @@ public:
 		auto &gstate = op.sink_state->Cast<ReservoirGlobalSinkState>();
 
 		idx_t count = gstate.global_buffer->Count() - scanned_row;
-		std::cerr << "[PhysicalReservoir]\t(0x" + std::to_string(uint64_t(&op)) +
+		std::cerr << "[PhysicalReservoir] (0x" + std::to_string(uint64_t(&op)) +
 		                 ")\tSource Row Number: " + std::to_string(count) + "\n";
 
 		return count / ((idx_t)STANDARD_VECTOR_SIZE * parallel_scan_chunk_count);
@@ -285,7 +285,7 @@ void ReservoirGlobalSourceState::PrepareScan(ReservoirGlobalSinkState &sink) {
 	scan_chunk_done = 0;
 	scanned_row = 0;
 
-	scan_chunks_per_task = 60;
+	scan_chunks_per_task = 1;
 
 	global_stage = ReservoirSourceStage::SCAN_BUFFER;
 }
