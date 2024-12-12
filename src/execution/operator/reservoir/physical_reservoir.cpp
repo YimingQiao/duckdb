@@ -9,7 +9,6 @@
 #include "duckdb/storage/temporary_memory_manager.hpp"
 
 namespace duckdb {
-
 PhysicalReservoir::PhysicalReservoir(LogicalOperator &op, vector<LogicalType> types, idx_t estimated_cardinality)
     : PhysicalOperator(PhysicalOperatorType::RESERVOIR, std::move(types), estimated_cardinality), is_impounding(true) {
 }
@@ -40,7 +39,7 @@ public:
 	//! Global Buffer
 	unique_ptr<ColumnDataCollection> global_buffer;
 
-	//! Whether or not all data has been sinked
+	//! Whether all data has been sinked
 	bool finalized;
 	//! The number of active local states
 	atomic<idx_t> active_local_states;
@@ -50,9 +49,6 @@ public:
 
 	//! Buffer held by each thread
 	vector<unique_ptr<ColumnDataCollection>> local_buffers;
-
-	//! Whether or not we have started scanning data using GetData
-	atomic<bool> scanned_data;
 };
 
 class ReservoirLocalSinkState : public LocalSinkState {
@@ -64,7 +60,7 @@ public:
 	    : num_chunk(0) {
 		auto &buffer_manager = BufferManager::GetBufferManager(context);
 		buffer = make_uniq<ColumnDataCollection>(buffer_manager, op.types);
-		gstate.active_local_states++;
+		++gstate.active_local_states;
 	}
 
 public:
@@ -171,15 +167,6 @@ SinkFinalizeType PhysicalReservoir::Finalize(Pipeline &pipeline, Event &event, C
 }
 
 //===--------------------------------------------------------------------===//
-// Operator
-//===--------------------------------------------------------------------===//
-OperatorResultType PhysicalReservoir::Execute(ExecutionContext &context, DataChunk &input, DataChunk &chunk,
-                                              GlobalOperatorState &gstate, OperatorState &state) const {
-	chunk.Reference(input);
-	return OperatorResultType::NEED_MORE_INPUT;
-}
-
-//===--------------------------------------------------------------------===//
 // Source
 //===--------------------------------------------------------------------===//
 enum class ReservoirSourceStage : uint8_t { INIT, SCAN_BUFFER, DONE };
@@ -192,8 +179,10 @@ public:
 
 	//! Initialize this source state using the info in the sink
 	void Initialize(ReservoirGlobalSinkState &sink);
+
 	//! Prepare the scan_buf stage
 	void PrepareScan(ReservoirGlobalSinkState &sink);
+
 	//! Assigns a task to a local source state
 	bool AssignTask(ReservoirGlobalSinkState &sink, ReservoirLocalSourceState &lstate);
 
@@ -218,7 +207,7 @@ public:
 	idx_t scan_chunk_idx = DConstants::INVALID_INDEX;
 	idx_t scan_chunk_count;
 	idx_t scan_chunk_done;
-	idx_t scan_chunks_per_thread = DConstants::INVALID_INDEX;
+	idx_t scan_chunks_per_task = DConstants::INVALID_INDEX;
 
 	idx_t parallel_scan_chunk_count;
 
@@ -243,8 +232,10 @@ public:
 
 	//! Do the work this thread has been assigned
 	void ExecuteTask(ReservoirGlobalSinkState &sink, ReservoirGlobalSourceState &gstate, DataChunk &chunk);
+
 	//! Whether this thread has finished the work it has been assigned
 	bool TaskFinished() const;
+
 	//! Scan
 	void ScanBuf(ReservoirGlobalSinkState &sink, ReservoirGlobalSourceState &gstate, DataChunk &chunk);
 
@@ -292,10 +283,9 @@ void ReservoirGlobalSourceState::PrepareScan(ReservoirGlobalSinkState &sink) {
 	scan_chunk_idx = 0;
 	scan_chunk_count = buf.ChunkCount();
 	scan_chunk_done = 0;
+	scanned_row = 0;
 
-	// scan_chunks_per_thread = MaxValue<idx_t>((scan_chunk_count + sink.num_threads - 1) / sink.num_threads, 1);
-
-	scan_chunks_per_thread = 4;
+	scan_chunks_per_task = 60;
 
 	global_stage = ReservoirSourceStage::SCAN_BUFFER;
 }
@@ -309,7 +299,7 @@ bool ReservoirGlobalSourceState::AssignTask(ReservoirGlobalSinkState &sink, Rese
 		if (scan_chunk_idx != scan_chunk_count) {
 			lstate.local_stage = global_stage;
 			lstate.scan_chunk_idx_from = scan_chunk_idx;
-			scan_chunk_idx = MinValue<idx_t>(scan_chunk_count, scan_chunk_idx + scan_chunks_per_thread);
+			scan_chunk_idx = MinValue<idx_t>(scan_chunk_count, scan_chunk_idx + scan_chunks_per_task);
 			lstate.scan_chunk_idx_to = scan_chunk_idx;
 			return true;
 		}
@@ -372,25 +362,24 @@ SourceResultType PhysicalReservoir::GetData(ExecutionContext &context, DataChunk
 	auto &sink = sink_state->Cast<ReservoirGlobalSinkState>();
 	auto &gstate = input.global_state.Cast<ReservoirGlobalSourceState>();
 	auto &lstate = input.local_state.Cast<ReservoirLocalSourceState>();
-	sink.scanned_data = true;
 
 	if (gstate.global_stage == ReservoirSourceStage::INIT) {
 		gstate.Initialize(sink);
 	}
 
-	// If the reservoir opens, we stop the pipeline
-	if (pipeline_sink_operator && lstate.TaskFinished()) {
-		auto *reservoir = static_cast<PhysicalReservoir *>(pipeline_sink_operator);
-		if (!reservoir->is_impounding) {
-			chunk.Reset();
-			return SourceResultType::FINISHED;
+	if (!lstate.TaskFinished()) {
+		lstate.ExecuteTask(sink, gstate, chunk);
+	} else {
+		// early stop?
+		if (pipeline_sink_operator) {
+			auto *reservoir = static_cast<PhysicalReservoir *>(pipeline_sink_operator);
+			if (!reservoir->is_impounding) {
+				chunk.Reset();
+				return SourceResultType::FINISHED;
+			}
 		}
-	}
 
-	// Any call to GetData must produce tuples, otherwise the pipeline executor thinks that we're done
-	// Therefore, we loop until we've produced tuples, or until the operator is actually done
-	if (gstate.global_stage != ReservoirSourceStage::DONE) {
-		if (!lstate.TaskFinished() || gstate.AssignTask(sink, lstate)) {
+		if (gstate.AssignTask(sink, lstate)) {
 			lstate.ExecuteTask(sink, gstate, chunk);
 		} else if (gstate.scan_chunk_count == gstate.scan_chunk_done) {
 			gstate.global_stage = ReservoirSourceStage::DONE;

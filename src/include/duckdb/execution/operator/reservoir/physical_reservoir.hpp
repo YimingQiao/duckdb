@@ -8,10 +8,10 @@
 
 #pragma once
 
-#include "duckdb/execution/physical_operator.hpp"
-#include "duckdb/planner/expression.hpp"
 #include "duckdb/common/enums/operator_result_type.hpp"
+#include "duckdb/execution/physical_operator.hpp"
 #include "duckdb/parallel/meta_pipeline.hpp"
+#include "duckdb/planner/expression.hpp"
 
 namespace duckdb {
 
@@ -33,15 +33,6 @@ public:
 	PhysicalReservoir(LogicalOperator &op, vector<LogicalType> types, idx_t estimated_cardinality);
 
 	mutable atomic<bool> is_impounding;
-
-public:
-	// Operator interface
-	OperatorResultType Execute(ExecutionContext &context, DataChunk &input, DataChunk &chunk,
-	                           GlobalOperatorState &gstate, OperatorState &state) const override;
-
-	bool ParallelOperator() const override {
-		return true;
-	}
 
 public:
 	// Source interface
