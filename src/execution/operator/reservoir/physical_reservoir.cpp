@@ -53,9 +53,6 @@ public:
 
 class ReservoirLocalSinkState : public LocalSinkState {
 public:
-	const idx_t CHUNK_THRESHOLD = DEFAULT_ROW_GROUP_SIZE / DEFAULT_STANDARD_VECTOR_SIZE;
-
-public:
 	ReservoirLocalSinkState(const PhysicalReservoir &op, ClientContext &context, ReservoirGlobalSinkState &gstate)
 	    : num_chunk(0) {
 		auto &buffer_manager = BufferManager::GetBufferManager(context);
@@ -357,10 +354,10 @@ SourceResultType PhysicalReservoir::GetData(ExecutionContext &context, DataChunk
 		gstate.Initialize(sink);
 	}
 
-	if (!lstate.TaskFinished()) {
-		lstate.ExecuteTask(sink, gstate, chunk);
-	} else {
-		if (gstate.AssignTask(sink, lstate)) {
+	// Any call to GetData must produce tuples, otherwise the pipeline executor thinks that we're done
+	// Therefore, we loop until we've produced tuples, or until the operator is actually done
+	if (gstate.global_stage != ReservoirSourceStage::DONE) {
+		if (!lstate.TaskFinished() || gstate.AssignTask(sink, lstate)) {
 			lstate.ExecuteTask(sink, gstate, chunk);
 		} else if (gstate.scan_chunk_count == gstate.scan_chunk_done) {
 			gstate.global_stage = ReservoirSourceStage::DONE;
