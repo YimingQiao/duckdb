@@ -126,6 +126,34 @@ bool Pipeline::ScheduleParallel(shared_ptr<Event> &event) {
 	if (max_threads > active_threads) {
 		max_threads = active_threads;
 	}
+
+	// show threads number
+	if (PhysicalReservoir::flag_debug) {
+		if (sink->GetName() != "BATCH_CREATE_TABLE_AS") {
+			auto now = std::chrono::system_clock::now();
+			auto duration = now.time_since_epoch();
+			auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() % 1000000;
+
+			std::string source_name = source->GetName();
+			if (source_name == "SEQ_SCAN ") {
+				auto details = source->ParamsToString();
+				source_name += "(";
+				for (auto &iter : details) {
+					if (iter.first == "Projections" || iter.first == "__estimated_cardinality__" ||
+					    iter.first == "Filters") {
+						continue;
+					}
+					source_name += iter.first + ": " + iter.second + ",\t";
+				}
+				source_name = source_name.substr(0, source_name.size() - 2) + ")";
+			}
+			std::cerr << " [Open] " + source_name + " (0x" + std::to_string(uint64_t(source.get())) + ") --> " +
+			                 sink->GetName() + "\t(0x" + std::to_string(uint64_t(sink.get())) +
+			                 ")\t#task/#thread: " + std::to_string(max_threads) + "/" + std::to_string(real_threads) +
+			                 "\tTick: " + std::to_string(milliseconds) + "ms\n";
+		}
+	}
+
 	return LaunchScanTasks(event, max_threads);
 }
 

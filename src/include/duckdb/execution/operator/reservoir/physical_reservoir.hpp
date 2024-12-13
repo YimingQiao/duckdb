@@ -27,6 +27,8 @@ public:
 
 	static constexpr const bool BLOCKED = false;
 
+	static constexpr const bool flag_debug = false;
+
 public:
 	PhysicalReservoir(LogicalOperator &op, vector<LogicalType> types, idx_t estimated_cardinality);
 
