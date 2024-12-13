@@ -20,6 +20,7 @@ class ThreadScheduler {
 public:
 	static ThreadScheduler &Get() {
 		static ThreadScheduler INSTANCE;
+		INSTANCE.reservoir_scheduled = 0;
 		return INSTANCE;
 	}
 
@@ -87,18 +88,18 @@ private:
 
 public:
 	void ResetReservoir() {
-		reservoir_scheduled = false;
+		reservoir_scheduled = 0;
 	}
 
 	void SetReservoir() {
-		reservoir_scheduled = true;
+		++reservoir_scheduled;
 	}
 
 	bool GetReservoir() {
-		return reservoir_scheduled;
+		return reservoir_scheduled = 1;
 	}
 
 private:
-	atomic<bool> reservoir_scheduled;
+	atomic<int> reservoir_scheduled;
 };
 } // namespace duckdb
