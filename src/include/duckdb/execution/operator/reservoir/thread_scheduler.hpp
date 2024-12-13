@@ -21,6 +21,7 @@ public:
 	static ThreadScheduler &Get() {
 		static ThreadScheduler INSTANCE;
 		INSTANCE.reservoir_scheduled = 0;
+		INSTANCE.SetThreadSetting(8, "TABLE_SCAN", "RESERVOIR");
 		return INSTANCE;
 	}
 
