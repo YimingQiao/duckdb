@@ -231,8 +231,9 @@ PipelineExecuteResult PipelineExecutor::Execute(idx_t max_chunks) {
 				    n_processed_chunks == DEFAULT_ROW_GROUP_SIZE / DEFAULT_STANDARD_VECTOR_SIZE) {
 					n_processed_chunks = 0;
 					auto *reservoir = static_cast<PhysicalReservoir *>(pipeline.sink.get());
-					source_result = (reservoir->is_impounding || PhysicalReservoir::BLOCKED) ? FetchFromSource(source_chunk)
-					                                                                 : SourceResultType::FINISHED;
+					source_result = (reservoir->is_impounding || PhysicalReservoir::BLOCKED)
+					                    ? FetchFromSource(source_chunk)
+					                    : SourceResultType::FINISHED;
 				} else {
 					source_result = FetchFromSource(source_chunk);
 				}
