@@ -484,7 +484,7 @@ public:
 			auto now = std::chrono::system_clock::now();
 			auto duration = now.time_since_epoch();
 			auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() % 1000000;
-			std::cerr << "[PhysicalHashJoin]\t(0x" << uint64_t(&sink.op)
+			std::cerr << "[PhysicalHashJoin] (0x" << uint64_t(&sink.op)
 			          << ")\tOpen the Reservoir\tTicks: " << std::to_string(milliseconds) + "ms\n";
 		}
 	}
