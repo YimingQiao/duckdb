@@ -28,6 +28,8 @@
 #include "duckdb/storage/storage_manager.hpp"
 #include "duckdb/storage/temporary_memory_manager.hpp"
 
+#include <duckdb/execution/operator/reservoir/physical_reservoir.hpp>
+
 namespace duckdb {
 
 PhysicalHashJoin::PhysicalHashJoin(LogicalOperator &op, unique_ptr<PhysicalOperator> left,
@@ -470,9 +472,11 @@ public:
 		auto now = std::chrono::system_clock::now();
 		auto duration = now.time_since_epoch();
 		auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() % 1000000;
-		std::cerr << " [Open] Hash Table Real Build (0x" + std::to_string(uint64_t(&sink.op)) +
-		                 ")\t#task/#thread: " + std::to_string(num_threads) + "/" + std::to_string(num_threads) +
-		                 "\tTick: " + std::to_string(milliseconds) + "ms\n";
+		if (PhysicalReservoir::flag_debug) {
+			std::cerr << " [Open] Hash Table Real Build (0x" + std::to_string(uint64_t(&sink.op)) +
+			                 ")\t#task/#thread: " + std::to_string(num_threads) + "/" + std::to_string(num_threads) +
+			                 "\tTick: " + std::to_string(milliseconds) + "ms\n";
+		}
 	}
 
 	void FinishEvent() override {
@@ -484,8 +488,10 @@ public:
 			auto now = std::chrono::system_clock::now();
 			auto duration = now.time_since_epoch();
 			auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() % 1000000;
-			std::cerr << "[PhysicalHashJoin] (0x" << uint64_t(&sink.op)
-			          << ")\tOpen the Reservoir\tTicks: " << std::to_string(milliseconds) + "ms\n";
+			if (PhysicalReservoir::flag_debug) {
+				std::cerr << "[PhysicalHashJoin] (0x" << uint64_t(&sink.op)
+				          << ")\tOpen the Reservoir\tTicks: " << std::to_string(milliseconds) + "ms\n";
+			}
 		}
 	}
 
