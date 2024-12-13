@@ -10,8 +10,6 @@
 
 #include "duckdb/common/enums/operator_result_type.hpp"
 #include "duckdb/execution/physical_operator.hpp"
-#include "duckdb/parallel/meta_pipeline.hpp"
-#include "duckdb/planner/expression.hpp"
 
 namespace duckdb {
 
