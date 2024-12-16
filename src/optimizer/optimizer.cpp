@@ -34,6 +34,7 @@
 #include "duckdb/optimizer/unnest_rewriter.hpp"
 #include "duckdb/planner/binder.hpp"
 #include "duckdb/planner/planner.hpp"
+#include "duckdb/optimizer/vector_filter_pull_up.hpp"
 
 namespace duckdb {
 
@@ -257,6 +258,12 @@ void Optimizer::RunBuiltInOptimizers() {
 	RunOptimizer(OptimizerType::JOIN_FILTER_PUSHDOWN, [&]() {
 		JoinFilterPushdownOptimizer join_filter_pushdown(*this);
 		join_filter_pushdown.VisitOperator(*plan);
+	});
+
+	// pull up heavy filters, e.g., vector similarity search using flat index
+	RunOptimizer(OptimizerType::VECTOR_PULL_UP, [&]() {
+		VectorFilterPullUp vector_pull_up;
+		plan = vector_pull_up.Rewrite(std::move(plan));
 	});
 }
 

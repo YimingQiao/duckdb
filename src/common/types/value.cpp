@@ -1626,12 +1626,23 @@ string Value::ToSQLString() const {
 	case LogicalTypeId::LIST: {
 		string ret = "[";
 		auto &list_values = ListValue::GetChildren(*this);
-		for (idx_t i = 0; i < list_values.size(); i++) {
-			auto &child = list_values[i];
-			ret += child.ToSQLString();
-			if (i < list_values.size() - 1) {
-				ret += ", ";
+		if (list_values.size() <= 8) {
+			for (idx_t i = 0; i < list_values.size(); i++) {
+				auto &child = list_values[i];
+				ret += child.ToSQLString();
+				if (i < list_values.size() - 1) {
+					ret += ", ";
+				}
 			}
+		} else {
+			for (idx_t i = 0; i < 8; i++) {
+				auto &child = list_values[i];
+				ret += child.ToSQLString();
+				if (i < list_values.size() - 1) {
+					ret += ", ";
+				}
+			}
+			ret += "...";
 		}
 		ret += "]";
 		return ret;
