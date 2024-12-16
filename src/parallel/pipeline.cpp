@@ -116,7 +116,20 @@ bool Pipeline::ScheduleParallel(shared_ptr<Event> &event) {
 	}
 	auto max_threads = source_state->MaxThreads();
 	auto &scheduler = TaskScheduler::GetScheduler(executor.context);
-	auto active_threads = NumericCast<idx_t>(scheduler.NumberOfThreads());
+	auto real_threads = NumericCast<idx_t>(scheduler.NumberOfThreads());
+
+	// reservoir processing
+	auto active_threads = real_threads;
+	if (!PhysicalReservoir::BLOCKED) {
+		idx_t left_thread = ThreadScheduler::Get().GetThreadSetting("TABLE_SCAN", "RESERVOIR", true);
+		if (sink->type == PhysicalOperatorType::RESERVOIR) {
+			active_threads = left_thread;
+			ThreadScheduler::Get().SetReservoir();
+		} else if (source->type == PhysicalOperatorType::TABLE_SCAN && sink->type == PhysicalOperatorType::HASH_JOIN) {
+			active_threads = ThreadScheduler::Get().GetReservoir() ? active_threads : active_threads - left_thread;
+		}
+	}
+
 	if (max_threads > active_threads) {
 		max_threads = active_threads;
 	}

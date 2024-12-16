@@ -9,13 +9,15 @@
 #pragma once
 
 #include "duckdb/common/atomic.hpp"
-#include "duckdb/common/unordered_set.hpp"
+#include "duckdb/common/reference_map.hpp"
 #include "duckdb/common/set.hpp"
+#include "duckdb/common/unordered_set.hpp"
 #include "duckdb/execution/physical_operator.hpp"
 #include "duckdb/function/table_function.hpp"
-#include "duckdb/parallel/task_scheduler.hpp"
-#include "duckdb/common/reference_map.hpp"
 #include "duckdb/parallel/executor_task.hpp"
+#include "duckdb/parallel/task_scheduler.hpp"
+
+#include <iostream>
 
 namespace duckdb {
 
