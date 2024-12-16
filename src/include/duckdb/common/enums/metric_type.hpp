@@ -68,6 +68,7 @@ enum class MetricsType : uint8_t {
     OPTIMIZER_EXTENSION,
     OPTIMIZER_MATERIALIZED_CTE,
     OPTIMIZER_SUM_REWRITER,
+    OPTIMIZER_VECTOR_PULL_UP,
 };
 
 struct MetricsTypeHashFunction {
