@@ -1496,3 +1496,6 @@ if(EXISTS ${CMAKE_CONFIG_TEMPLATE} AND EXISTS ${CMAKE_CONFIG_VERSION_TEMPLATE})
           "${PROJECT_BINARY_DIR}/DuckDBConfigVersion.cmake"
     DESTINATION "${INSTALL_CMAKE_DIR}")
 endif()
+
+add_executable(vector_filter_main vector_filter_main.cpp)
+target_link_libraries(vector_filter_main duckdb)

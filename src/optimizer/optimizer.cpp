@@ -168,10 +168,10 @@ void Optimizer::RunBuiltInOptimizers() {
 
 	// then we perform the join ordering optimization
 	// this also rewrites cross products + filters into joins and performs filter pushdowns
-	RunOptimizer(OptimizerType::JOIN_ORDER, [&]() {
-		JoinOrderOptimizer optimizer(context);
-		plan = optimizer.Optimize(std::move(plan));
-	});
+	// RunOptimizer(OptimizerType::JOIN_ORDER, [&]() {
+	// 	JoinOrderOptimizer optimizer(context);
+	// 	plan = optimizer.Optimize(std::move(plan));
+	// });
 
 	// rewrites UNNESTs in DelimJoins by moving them to the projection
 	RunOptimizer(OptimizerType::UNNEST_REWRITER, [&]() {
@@ -205,10 +205,10 @@ void Optimizer::RunBuiltInOptimizers() {
 
 	// Once we know the column lifetime, we have more information regarding
 	// what relations should be the build side/probe side.
-	RunOptimizer(OptimizerType::BUILD_SIDE_PROBE_SIDE, [&]() {
-		BuildProbeSideOptimizer build_probe_side_optimizer(context, *plan);
-		build_probe_side_optimizer.VisitOperator(*plan);
-	});
+	// RunOptimizer(OptimizerType::BUILD_SIDE_PROBE_SIDE, [&]() {
+	// 	BuildProbeSideOptimizer build_probe_side_optimizer(context, *plan);
+	// 	build_probe_side_optimizer.VisitOperator(*plan);
+	// });
 
 	// pushes LIMIT below PROJECTION
 	RunOptimizer(OptimizerType::LIMIT_PUSHDOWN, [&]() {
@@ -229,12 +229,12 @@ void Optimizer::RunBuiltInOptimizers() {
 	});
 
 	// perform statistics propagation
-	column_binding_map_t<unique_ptr<BaseStatistics>> statistics_map;
-	RunOptimizer(OptimizerType::STATISTICS_PROPAGATION, [&]() {
-		StatisticsPropagator propagator(*this, *plan);
-		propagator.PropagateStatistics(plan);
-		statistics_map = propagator.GetStatisticsMap();
-	});
+	// column_binding_map_t<unique_ptr<BaseStatistics>> statistics_map;
+	// RunOptimizer(OptimizerType::STATISTICS_PROPAGATION, [&]() {
+	// 	StatisticsPropagator propagator(*this, *plan);
+	// 	propagator.PropagateStatistics(plan);
+	// 	statistics_map = propagator.GetStatisticsMap();
+	// });
 
 	// remove duplicate aggregates
 	RunOptimizer(OptimizerType::COMMON_AGGREGATE, [&]() {
