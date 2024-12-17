@@ -38,8 +38,7 @@ PhysicalHashJoin::PhysicalHashJoin(LogicalOperator &op, unique_ptr<PhysicalOpera
                                    vector<LogicalType> delim_types, idx_t estimated_cardinality,
                                    unique_ptr<JoinFilterPushdownInfo> pushdown_info_p)
     : PhysicalComparisonJoin(op, PhysicalOperatorType::HASH_JOIN, std::move(cond), join_type, estimated_cardinality),
-      delim_types(std::move(delim_types)), perfect_join_statistics(std::move(perfect_join_stats)),
-      is_impounding(nullptr) {
+      delim_types(std::move(delim_types)), is_impounding(nullptr) {
 
 	filter_pushdown = std::move(pushdown_info_p);
 
@@ -325,7 +324,6 @@ void JoinFilterPushdownInfo::Sink(DataChunk &chunk, JoinFilterLocalState &lstate
 
 SinkResultType PhysicalHashJoin::Sink(ExecutionContext &context, DataChunk &chunk, OperatorSinkInput &input) const {
 	auto start_time = std::chrono::high_resolution_clock::now();
-
 
 	auto &gstate = input.global_state.Cast<HashJoinGlobalSinkState>();
 	auto &lstate = input.local_state.Cast<HashJoinLocalSinkState>();

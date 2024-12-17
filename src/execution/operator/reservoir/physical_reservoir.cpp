@@ -380,7 +380,7 @@ SourceResultType PhysicalReservoir::GetData(ExecutionContext &context, DataChunk
 	return chunk.size() == 0 ? SourceResultType::FINISHED : SourceResultType::HAVE_MORE_OUTPUT;
 }
 
-double PhysicalReservoir::GetProgress(ClientContext &context, GlobalSourceState &gstate) const {
+ProgressData PhysicalReservoir::GetProgress(ClientContext &context, GlobalSourceState &gstate) const {
 	return PhysicalOperator::GetProgress(context, gstate);
 }
 

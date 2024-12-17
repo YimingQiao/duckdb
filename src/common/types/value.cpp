@@ -1650,12 +1650,23 @@ string Value::ToSQLString() const {
 	case LogicalTypeId::ARRAY: {
 		string ret = "[";
 		auto &array_values = ArrayValue::GetChildren(*this);
-		for (idx_t i = 0; i < array_values.size(); i++) {
-			auto &child = array_values[i];
-			ret += child.ToSQLString();
-			if (i < array_values.size() - 1) {
-				ret += ", ";
+		if (array_values.size() <= 8) {
+			for (idx_t i = 0; i < array_values.size(); i++) {
+				auto &child = array_values[i];
+				ret += child.ToSQLString();
+				if (i < array_values.size() - 1) {
+					ret += ", ";
+				}
 			}
+		} else {
+			for (idx_t i = 0; i < 8; i++) {
+				auto &child = array_values[i];
+				ret += child.ToSQLString();
+				if (i < array_values.size() - 1) {
+					ret += ", ";
+				}
+			}
+			ret += "...";
 		}
 		ret += "]";
 		return ret;
