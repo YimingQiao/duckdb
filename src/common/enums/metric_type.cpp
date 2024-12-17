@@ -38,6 +38,7 @@ profiler_settings_t MetricsUtils::GetOptimizerMetrics() {
         MetricsType::OPTIMIZER_JOIN_FILTER_PUSHDOWN,
         MetricsType::OPTIMIZER_EXTENSION,
         MetricsType::OPTIMIZER_MATERIALIZED_CTE,
+        MetricsType::OPTIMIZER_SUM_REWRITER,
         MetricsType::OPTIMIZER_RESERVOIR_INSERT,
     };
 }
@@ -107,6 +108,8 @@ MetricsType MetricsUtils::GetOptimizerMetricByType(OptimizerType type) {
             return MetricsType::OPTIMIZER_EXTENSION;
         case OptimizerType::MATERIALIZED_CTE:
             return MetricsType::OPTIMIZER_MATERIALIZED_CTE;
+        case OptimizerType::SUM_REWRITER:
+            return MetricsType::OPTIMIZER_SUM_REWRITER;
         case OptimizerType::RESERVOIR_INSERT:
             return MetricsType::OPTIMIZER_RESERVOIR_INSERT;
        default:
@@ -166,6 +169,8 @@ OptimizerType MetricsUtils::GetOptimizerTypeByMetric(MetricsType type) {
             return OptimizerType::EXTENSION;
         case MetricsType::OPTIMIZER_MATERIALIZED_CTE:
             return OptimizerType::MATERIALIZED_CTE;
+        case MetricsType::OPTIMIZER_SUM_REWRITER:
+            return OptimizerType::SUM_REWRITER;
         case MetricsType::OPTIMIZER_RESERVOIR_INSERT:
             return OptimizerType::RESERVOIR_INSERT;
     default:
@@ -200,6 +205,7 @@ bool MetricsUtils::IsOptimizerMetric(MetricsType type) {
         case MetricsType::OPTIMIZER_JOIN_FILTER_PUSHDOWN:
         case MetricsType::OPTIMIZER_EXTENSION:
         case MetricsType::OPTIMIZER_MATERIALIZED_CTE:
+        case MetricsType::OPTIMIZER_SUM_REWRITER:
         case MetricsType::OPTIMIZER_RESERVOIR_INSERT:
             return true;
         default:

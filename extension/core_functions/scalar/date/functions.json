@@ -14,13 +14,6 @@
         "type": "scalar_function_set"
     },
     {
-        "name": "current_date",
-        "description": "Returns the current date",
-        "example": "current_date()",
-        "type": "scalar_function",
-        "aliases": ["today"]
-    },
-    {
         "name": "date_diff",
         "parameters": "part,startdate,enddate",
         "description": "The number of partition boundaries between the timestamps",
@@ -134,13 +127,6 @@
         "type": "scalar_function_set"
     },
     {
-        "struct": "CurrentTimeFun",
-        "name": "get_current_time",
-        "description": "Returns the current time",
-        "example": "get_current_time()",
-        "type": "scalar_function"
-    },
-    {
         "name": "get_current_timestamp",
         "description": "Returns the current timestamp",
         "example": "get_current_timestamp()",
@@ -223,6 +209,13 @@
         "type": "scalar_function_set"
     },
     {
+        "name": "make_timestamp_ns",
+        "parameters": "nanos",
+        "description": "The timestamp for the given nanoseconds since epoch",
+        "example": "make_timestamp(1732117793000000000)",
+        "type": "scalar_function_set"
+    },
+    {
         "struct": "MicrosecondsFun",
         "name": "microsecond",
         "parameters": "ts",
@@ -275,6 +268,14 @@
         "description": "Extract the nanosecond component from a date or timestamp",
         "example": "nanosecond(timestamp_ns '2021-08-03 11:59:44.123456789') => 44123456789",
         "type": "scalar_function_set"
+    },
+    {
+        "struct": "NormalizedIntervalFun",
+        "name": "normalized_interval",
+        "parameters": "interval",
+        "description": "Normalizes an INTERVAL to an equivalent interval",
+        "example": "normalized_interval(INTERVAL '30 days')",
+        "type": "scalar_function"
     },
     {
         "name": "quarter",
