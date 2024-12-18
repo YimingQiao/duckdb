@@ -505,7 +505,7 @@ void HNSWIndex::VerifyAppend(DataChunk &chunk, optional_ptr<BoundIndex> delete_i
 }
 
 void HNSWIndex::VerifyConstraint(DataChunk &chunk, optional_ptr<BoundIndex> delete_index, ConflictManager &manager) {
-	// There is nothing to verify here as we don't support constraints anyway
+	throw NotImplementedException("HNSWIndex::VerifyConstraint() not implemented");
 }
 
 void HNSWIndex::PersistToDisk() {
@@ -564,10 +564,6 @@ bool HNSWIndex::MergeIndexes(IndexLock &state, BoundIndex &other_index) {
 }
 
 void HNSWIndex::Vacuum(IndexLock &state) {
-}
-
-void HNSWIndex::CheckConstraintsForChunk(DataChunk &input, ConflictManager &conflict_manager) {
-	throw NotImplementedException("HNSWIndex::CheckConstraintsForChunk() not implemented");
 }
 
 string HNSWIndex::VerifyAndToString(IndexLock &state, const bool only_verify) {

@@ -93,9 +93,6 @@ public:
 	//! Traverses an HNSWIndex and vacuums the qualifying nodes. The lock obtained from InitializeLock must be held
 	void Vacuum(IndexLock &state) override;
 
-	//! Performs constraint checking for a chunk of input data
-	void CheckConstraintsForChunk(DataChunk &input, ConflictManager &conflict_manager) override;
-
 	//! Returns the string representation of the HNSWIndex, or only traverses and verifies the index.
 	string VerifyAndToString(IndexLock &state, const bool only_verify) override;
 	//! Ensures that the node allocation counts match the node counts.
