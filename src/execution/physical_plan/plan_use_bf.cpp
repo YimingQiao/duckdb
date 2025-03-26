@@ -19,7 +19,8 @@ PhysicalOperator &PhysicalPlanGenerator::CreatePlan(LogicalUseBF &op) {
 	}
 	D_ASSERT(target_bf != nullptr);
 
-	auto &use_bf = Make<PhysicalUseBF>(plan.types, target_bf, create_bf_op, op.estimated_cardinality);
+	auto &use_bf =
+	    Make<PhysicalUseBF>(plan.types, target_bf, std::move(op.expressions[0]), create_bf_op, op.estimated_cardinality);
 	use_bf.children.emplace_back(plan);
 	return use_bf;
 }

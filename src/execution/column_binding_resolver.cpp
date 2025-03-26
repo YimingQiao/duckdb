@@ -39,7 +39,7 @@ void ColumnBindingResolver::VisitOperator(LogicalOperator &op) {
 			}
 		}
 		bindings = op.GetColumnBindings();
-		VisitOperatorExpressions(op);
+		// VisitOperatorExpressions(op);
 		return;
 	}
 	case LogicalOperatorType::LOGICAL_USE_BF: {
@@ -61,7 +61,7 @@ void ColumnBindingResolver::VisitOperator(LogicalOperator &op) {
 		}
 
 		bindings = op.GetColumnBindings();
-		VisitOperatorExpressions(op);
+		// VisitOperatorExpressions(op);
 		return;
 	}
 	case LogicalOperatorType::LOGICAL_ASOF_JOIN:

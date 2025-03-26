@@ -6,6 +6,21 @@ namespace duckdb {
 
 LogicalCreateBF::LogicalCreateBF(vector<shared_ptr<BloomFilterPlan>> bloom_filters)
     : LogicalOperator(LogicalOperatorType::LOGICAL_CREATE_BF), bf_to_create_plans(std::move(bloom_filters)) {
+	for (auto &plan : bf_to_create_plans) {
+		for (auto &expr : plan->build) {
+			bool is_existed = false;
+			for (auto &cur_exp : expressions) {
+				if (cur_exp->Equals(*expr)) {
+					is_existed = true;
+					break;
+				}
+			}
+
+			if (!is_existed) {
+				expressions.push_back(expr->Copy());
+			}
+		}
+	}
 }
 
 InsertionOrderPreservingMap<string> LogicalCreateBF::ParamsToString() const {

@@ -13,8 +13,7 @@ public:
 	static constexpr const PhysicalOperatorType TYPE = PhysicalOperatorType::CREATE_BF;
 
 public:
-	PhysicalCreateBF(vector<LogicalType> types, const vector<shared_ptr<BloomFilterPlan>> &bf_plans,
-	                 idx_t estimated_cardinality);
+	PhysicalCreateBF(vector<LogicalType> types, const vector<shared_ptr<BloomFilterPlan>> &bf_plans, idx_t estimated_cardinality);
 
 	vector<shared_ptr<BloomFilter>> bf_to_create;
 	shared_ptr<Pipeline> this_pipeline;

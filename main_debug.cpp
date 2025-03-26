@@ -5,7 +5,7 @@
 
 int main() {
 	// Open DuckDB database (in-memory for simplicity, change "example.db" for a persistent one)
-	std::string path = "../duckdb_benchmark_data/imdb.duckdb";
+	std::string path = "../duckdb_benchmark_data/tpch_sf1.duckdb";
 	duckdb::DuckDB db(path);
 	duckdb::Connection conn(db);
 
@@ -13,36 +13,31 @@ int main() {
 
 	std::string query = R"(
 		explain analyze
-		           SELECT MIN(mc.note) AS production_note,
-		       MIN(t.title) AS movie_title,
-		       MIN(t.production_year) AS movie_year
-		FROM company_type AS ct,
-		     info_type AS it,
-		     movie_companies AS mc,
-		     movie_info_idx AS mi_idx,
-		     title AS t
-		WHERE ct.kind = 'production companies'
-		  AND it.info = 'top 250 rank'
-		  AND mc.note NOT LIKE '%(as Metro-Goldwyn-Mayer Pictures)%'
-		  AND (mc.note LIKE '%(co-production)%'
-		       OR mc.note LIKE '%(presents)%')
-		  AND ct.id = mc.company_type_id
-		  AND t.id = mc.movie_id
-		  AND t.id = mi_idx.movie_id
-		  AND mc.movie_id = mi_idx.movie_id
-		  AND it.id = mi_idx.info_type_id;)";
+		        SELECT
+				    sum(l_extendedprice) / 7.0 AS avg_yearly
+				FROM
+				    lineitem,
+				    part
+				WHERE
+				    p_partkey = l_partkey
+				    AND p_brand = 'Brand#23'
+				    AND p_container = 'MED BOX'
+				    AND l_quantity < (
+				        SELECT
+				            0.2 * avg(l_quantity)
+				        FROM
+				            lineitem
+				        WHERE
+				            l_partkey = p_partkey);
+				)";
 
 	// Execute query twice to warm up
 	conn.Query(query);
 	conn.Query(query);
 
-	// Start timer
-	auto start = std::chrono::high_resolution_clock::now();
-
 	// Execute last query
+	auto start = std::chrono::high_resolution_clock::now();
 	auto result = conn.Query(query);
-
-	// Stop timer
 	auto end = std::chrono::high_resolution_clock::now();
 
 	// Calculate elapsed time in milliseconds

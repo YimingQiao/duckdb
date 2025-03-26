@@ -89,6 +89,11 @@ ColumnBinding LateMaterialization::ConstructRHS(unique_ptr<LogicalOperator> &op)
 			}
 			break;
 		}
+		case LogicalOperatorType::LOGICAL_CREATE_BF:
+		case LogicalOperatorType::LOGICAL_USE_BF: {
+			// column binding pass-through this operator as-is
+			break;
+		}
 		default:
 			throw InternalException("Unsupported logical operator in LateMaterialization::ConstructRHS");
 		}
@@ -101,6 +106,30 @@ void LateMaterialization::ReplaceTopLevelTableIndex(LogicalOperator &root, idx_t
 	while (true) {
 		auto &op = current_op.get();
 		switch (op.type) {
+		case LogicalOperatorType::LOGICAL_USE_BF: {
+			auto & bf_user = op.Cast<LogicalUseBF>();
+			for (auto& expr: bf_user.expressions) {
+				ReplaceTableReferences(*expr, new_index);
+			}
+			for (auto& expr: bf_user.bf_to_use_plan->apply) {
+				ReplaceTableReferences(*expr, new_index);
+			}
+			current_op = *op.children[0];
+			break;
+		}
+		case LogicalOperatorType::LOGICAL_CREATE_BF: {
+			auto& bf_creator = op.Cast<LogicalCreateBF>();
+			for (auto& expr: bf_creator.expressions) {
+				ReplaceTableReferences(*expr, new_index);
+			}
+			for (auto& plan: bf_creator.bf_to_create_plans) {
+				for (auto& expr: plan->build) {
+					ReplaceTableReferences(*expr, new_index);
+				}
+			}
+			current_op = *op.children[0];
+			break;
+		}
 		case LogicalOperatorType::LOGICAL_PROJECTION: {
 			// reached a projection - modify the table index and return
 			auto &proj = op.Cast<LogicalProjection>();
@@ -228,6 +257,32 @@ bool LateMaterialization::TryLateMaterialization(unique_ptr<LogicalOperator> &op
 			child = *child.get().children[0];
 			break;
 		}
+		case LogicalOperatorType::LOGICAL_CREATE_BF: {
+			auto& bf_creator = child.get().Cast<LogicalCreateBF>();
+			// source_operators.push_back(child);
+
+			for (auto& plan: bf_creator.bf_to_create_plans) {
+				for (auto& expr: plan->build) {
+					VisitExpression(&expr);
+				}
+			}
+
+			VisitOperatorExpressions(child.get());
+			// continue into child
+			child = *child.get().children[0];
+			break;
+		}
+		case LogicalOperatorType::LOGICAL_USE_BF: {
+			auto& bf_user = child.get().Cast<LogicalUseBF>();
+			for (auto& expr: bf_user.bf_to_use_plan->apply) {
+				VisitExpression(&expr);
+			}
+
+			VisitOperatorExpressions(child.get());
+			// continue into child
+			child = *child.get().children[0];
+			break;
+		}
 		default:
 			// unsupported operator for late materialization
 			return false;
@@ -295,7 +350,7 @@ bool LateMaterialization::TryLateMaterialization(unique_ptr<LogicalOperator> &op
 			auto expr = order.expression->Copy();
 			final_orders.emplace_back(order.type, order.null_order, std::move(expr));
 		}
-	} else {
+	} else if (root_type == LogicalOperatorType::LOGICAL_LIMIT || root_type == LogicalOperatorType::LOGICAL_SAMPLE) {
 		// for limit/sample we order by row-id
 		auto row_id_expr = make_uniq<BoundColumnRefExpression>("rowid", row_id_type, lhs_binding);
 		final_orders.emplace_back(OrderType::ASCENDING, OrderByNullType::NULLS_LAST, std::move(row_id_expr));
@@ -346,7 +401,7 @@ bool LateMaterialization::TryLateMaterialization(unique_ptr<LogicalOperator> &op
 		order->children.push_back(std::move(proj));
 
 		op = std::move(order);
-	} else {
+	} else if (root_type == LogicalOperatorType::LOGICAL_LIMIT || root_type == LogicalOperatorType::LOGICAL_SAMPLE){
 		// for limit/sample we order on row-id, so we need to order BEFORE the final projection
 		// because the final projection removes row-ids
 		auto order = make_uniq<LogicalOrder>(std::move(final_orders));
@@ -360,6 +415,12 @@ bool LateMaterialization::TryLateMaterialization(unique_ptr<LogicalOperator> &op
 			proj->SetEstimatedCardinality(order->estimated_cardinality);
 		}
 		proj->children.push_back(std::move(order));
+
+		op = std::move(proj);
+	} else {
+		// for BF creator and user, we do not need sorting
+		auto proj = make_uniq<LogicalProjection>(proj_index, std::move(final_proj_list));
+		proj->children.push_back(std::move(join));
 
 		op = std::move(proj);
 	}
@@ -441,6 +502,12 @@ unique_ptr<LogicalOperator> LateMaterialization::Optimize(unique_ptr<LogicalOper
 		if (sample.sample_options->sample_size.GetValue<uint64_t>() > max_row_count) {
 			break;
 		}
+		if (TryLateMaterialization(op)) {
+			return op;
+		}
+		break;
+	}
+	case LogicalOperatorType::LOGICAL_CREATE_BF: {
 		if (TryLateMaterialization(op)) {
 			return op;
 		}
