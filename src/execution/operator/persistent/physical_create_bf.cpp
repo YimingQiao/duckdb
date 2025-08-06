@@ -225,9 +225,18 @@ bool PhysicalCreateBF::GiveUpBFCreation(const DataChunk &chunk, OperatorSinkInpu
 			double source_rows = static_cast<double>(this_pipeline->num_source_chunks * STANDARD_VECTOR_SIZE);
 			double selectivity = input_rows / source_rows;
 			double row_length = static_cast<double>(gstate.total_row_size) / input_rows;
-			if (progress_percent < 0.65 && (selectivity > 0.35 || (row_length > 40 && selectivity > 0.2))) {
-				is_successful = false;
-				return true;
+
+			// TODO: Currently, the number of threads affect the accuracy of progress percent.
+			if (gstate.num_threads > 8) {
+				if (selectivity > 0 || (row_length > 40 && selectivity > 0)) {
+					is_successful = false;
+					return true;
+				}
+			} else {
+				if (progress_percent <= 0.35 && (selectivity > 0 || (row_length > 40 && selectivity > 0))) {
+					is_successful = false;
+					return true;
+				}
 			}
 
 			// 2. Estimate the lower bound of required memory, which is used to materialize this table. If it is very
