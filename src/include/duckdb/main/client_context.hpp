@@ -210,6 +210,9 @@ public:
 	//! Returns the current executor
 	Executor &GetExecutor();
 
+	//! Temporarily override the current executor. Returns the previous executor pointer.
+	Executor *SetExecutor(Executor *executor);
+
 	//! Return the current logger
 	Logger &GetLogger() const;
 

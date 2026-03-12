@@ -339,6 +339,14 @@ Executor &ClientContext::GetExecutor() {
 	return *active_query->executor;
 }
 
+Executor *ClientContext::SetExecutor(Executor *executor) {
+	D_ASSERT(active_query);
+	auto *previous = active_query->executor.get();
+	active_query->executor.release();
+	active_query->executor = unique_ptr<Executor>(executor);
+	return previous;
+}
+
 Logger &ClientContext::GetLogger() const {
 	return *logger;
 }
