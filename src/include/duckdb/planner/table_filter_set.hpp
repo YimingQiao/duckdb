@@ -112,6 +112,8 @@ class DynamicTableFilterSet {
 public:
 	void ClearFilters(const PhysicalOperator &op);
 	void PushFilter(const PhysicalOperator &op, ProjectionIndex column_index, unique_ptr<TableFilter> filter);
+	//! Push a filter directly without a PhysicalOperator key (for optimizer-injected filters)
+	void PushFilterDirect(idx_t column_index, unique_ptr<TableFilter> filter);
 
 	bool HasFilters() const;
 	unique_ptr<TableFilterSet> GetFinalTableFilters(const PhysicalTableScan &scan,
@@ -120,6 +122,7 @@ public:
 private:
 	mutable mutex lock;
 	reference_map_t<const PhysicalOperator, unique_ptr<TableFilterSet>> filters;
+	unique_ptr<TableFilterSet> direct_filters;
 };
 
 } // namespace duckdb

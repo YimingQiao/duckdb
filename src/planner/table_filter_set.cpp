@@ -170,16 +170,24 @@ void DynamicTableFilterSet::PushFilter(const PhysicalOperator &op, ProjectionInd
 	filter_ptr->PushFilter(column_index, std::move(filter));
 }
 
+void DynamicTableFilterSet::PushFilterDirect(idx_t column_index, unique_ptr<TableFilter> filter) {
+	lock_guard<mutex> l(lock);
+	if (!direct_filters) {
+		direct_filters = make_uniq<TableFilterSet>();
+	}
+	direct_filters->PushFilter(ColumnIndex(column_index), std::move(filter));
+}
+
 bool DynamicTableFilterSet::HasFilters() const {
 	lock_guard<mutex> l(lock);
-	return !filters.empty();
+	return !filters.empty() || (direct_filters && direct_filters->HasFilters());
 }
 
 unique_ptr<TableFilterSet>
 DynamicTableFilterSet::GetFinalTableFilters(const PhysicalTableScan &scan,
                                             optional_ptr<TableFilterSet> existing_filters) const {
 	lock_guard<mutex> l(lock);
-	D_ASSERT(!filters.empty());
+	D_ASSERT(!filters.empty() || (direct_filters && direct_filters->HasFilters()));
 	auto result = make_uniq<TableFilterSet>();
 	if (existing_filters) {
 		for (auto &filter_entry : *existing_filters) {
@@ -189,6 +197,11 @@ DynamicTableFilterSet::GetFinalTableFilters(const PhysicalTableScan &scan,
 	for (auto &entry : filters) {
 		for (auto &filter_entry : *entry.second) {
 			result->PushFilter(filter_entry.GetIndex(), filter_entry.Filter().Copy());
+		}
+	}
+	if (direct_filters) {
+		for (auto &filter_entry : *direct_filters) {
+			result->PushFilter(ColumnIndex(filter_entry.ColumnIndex()), filter_entry.Filter().Copy());
 		}
 	}
 	if (!result->HasFilters()) {

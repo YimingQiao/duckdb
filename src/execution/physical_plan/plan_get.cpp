@@ -101,6 +101,10 @@ PhysicalOperator &PhysicalPlanGenerator::CreatePlan(LogicalGet &op) {
 			auto &filter_expr = entry.Filter();
 			auto &column_idx = op.GetColumnIndex(filter_idx);
 			auto column_id = column_idx.GetPrimaryIndex();
+			// Skip virtual columns (e.g., row_id) — they are not in returned_types
+			if (column_idx.IsVirtualColumn()) {
+				continue;
+			}
 			if (!op.function.supports_pushdown_type(*op.bind_data, column_id)) {
 				LogicalType column_type;
 				if (IsVirtualColumn(column_id)) {
