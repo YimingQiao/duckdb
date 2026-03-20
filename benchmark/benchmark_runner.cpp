@@ -184,7 +184,7 @@ void BenchmarkRunner::RunBenchmark(Benchmark *benchmark) {
 					LogSummary(benchmark->name, "INCORRECT RESULT: " + verify, i);
 					break;
 				} else {
-					LogResult(std::to_string(state->execution_time >= 0 ? state->execution_time : profiler.Elapsed()));
+					LogResult(std::to_string(profiler.Elapsed()));
 				}
 			}
 		}
