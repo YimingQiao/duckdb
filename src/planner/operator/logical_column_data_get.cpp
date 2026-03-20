@@ -28,6 +28,13 @@ LogicalColumnDataGet::LogicalColumnDataGet(idx_t table_index, vector<LogicalType
 }
 
 vector<ColumnBinding> LogicalColumnDataGet::GetColumnBindings() {
+	if (!binding_offsets.empty()) {
+		vector<ColumnBinding> result;
+		for (auto offset : binding_offsets) {
+			result.emplace_back(table_index, offset);
+		}
+		return result;
+	}
 	return GenerateColumnBindings(table_index, chunk_types.size());
 }
 
