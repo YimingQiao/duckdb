@@ -21,7 +21,6 @@ namespace duckdb {
 
 //! Base class for any state that has to be kept by a Benchmark
 struct BenchmarkState {
-	double execution_time = -1;
 	virtual ~BenchmarkState() {
 	}
 };

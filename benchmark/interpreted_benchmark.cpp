@@ -651,32 +651,24 @@ void InterpretedBenchmark::Assert(BenchmarkState *state_p) {
 
 void InterpretedBenchmark::Run(BenchmarkState *state_p) {
 	auto &state = (InterpretedBenchmarkState &)*state_p;
+	auto &context = state.con.context;
 
-	// Prepare fresh each time (RPT bloom filter state is consumed after Execute)
-	auto prepared = state.con.Prepare(run_query);
-	if (prepared->HasError()) {
-		prepared->error.Throw();
+	auto &config = ClientConfig::GetConfig(*context);
+	auto result_collector_setting = PrepareResultCollector(config, *this);
+	const bool use_streaming = result_type == QueryResultType::STREAM_RESULT;
+	auto temp_result = context->Query(run_query, use_streaming);
+	if (temp_result->type != result_type) {
+		throw InternalException("Query did not produce the right result type, expected %s but got %s",
+		                        EnumUtil::ToString(result_type), EnumUtil::ToString(temp_result->type));
 	}
-
-	// Execute only (timed)
-	Profiler exec_profiler;
-	exec_profiler.Start();
-	vector<Value> values;
-	auto temp_result = prepared->Execute(values, false);
-	exec_profiler.End();
-	state.execution_time = exec_profiler.Elapsed();
-
-	if (temp_result->HasError()) {
-		temp_result->ThrowError();
-	}
-
 	if (temp_result->type == QueryResultType::STREAM_RESULT) {
 		auto &stream_query = temp_result->Cast<StreamQueryResult>();
 		state.result = stream_query.Materialize();
-	} else if (temp_result->type == QueryResultType::MATERIALIZED_RESULT) {
-		state.result = unique_ptr_cast<duckdb::QueryResult, duckdb::MaterializedQueryResult>(std::move(temp_result));
-	} else {
+	} else if (temp_result->type == QueryResultType::ARROW_RESULT) {
+		/* no-op, this is only used to test the overhead of the result collector */
 		state.result = nullptr;
+	} else {
+		state.result = unique_ptr_cast<duckdb::QueryResult, duckdb::MaterializedQueryResult>(std::move(temp_result));
 	}
 }
 
