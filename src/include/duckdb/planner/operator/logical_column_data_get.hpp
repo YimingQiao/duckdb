@@ -34,6 +34,9 @@ public:
 	vector<LogicalType> chunk_types;
 	//! (optionally owned) column data collection
 	optionally_owned_ptr<ColumnDataCollection> collection;
+	//! Optional: custom binding offsets for column indices.
+	//! When non-empty, GetColumnBindings() returns (table_index, binding_offsets[i]) instead of (table_index, i).
+	vector<idx_t> binding_offsets;
 
 public:
 	vector<ColumnBinding> GetColumnBindings() override;
