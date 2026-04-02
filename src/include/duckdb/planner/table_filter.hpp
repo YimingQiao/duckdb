@@ -59,6 +59,12 @@ public:
 	}
 	virtual unique_ptr<Expression> ToExpression(const Expression &column) const = 0;
 
+	//! Whether this filter is only used for zone map filtering (row group level)
+	//! and should NOT be applied at the row level.
+	virtual bool IsOnlyForZoneMapFiltering() const {
+		return false;
+	}
+
 	virtual void Serialize(Serializer &serializer) const;
 	static unique_ptr<TableFilter> Deserialize(Deserializer &deserializer);
 

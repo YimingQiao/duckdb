@@ -59,6 +59,9 @@ public:
 
 public:
 	unique_ptr<TableFilter> Copy() const override;
+	bool IsOnlyForZoneMapFiltering() const override {
+		return false;
+	}
 	FilterPropagateResult CheckStatistics(BaseStatistics &stats) const override;
 	void Serialize(Serializer &serializer) const override;
 	static unique_ptr<TableFilter> Deserialize(Deserializer &deserializer);
