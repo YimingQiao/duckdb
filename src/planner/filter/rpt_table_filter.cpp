@@ -14,9 +14,9 @@ idx_t RPTTableFilter::Filter(Vector &keys_v, SelectionVector &sel, idx_t &approv
 	DataChunk chunk;
 	if (sel.IsSet()) {
 		state.keys_sliced_v.Slice(keys_v, sel, approved_tuple_count);
-		chunk.data.emplace_back(state.keys_sliced_v);
+		chunk.data.emplace_back(Vector::Ref(state.keys_sliced_v));
 	} else {
-		chunk.data.emplace_back(keys_v);
+		chunk.data.emplace_back(Vector::Ref(keys_v));
 	}
 	chunk.SetCardinality(approved_tuple_count);
 

@@ -32,7 +32,7 @@ vector<ColumnBinding> LogicalColumnDataGet::GetColumnBindings() {
 	if (!binding_offsets.empty()) {
 		vector<ColumnBinding> result;
 		for (auto offset : binding_offsets) {
-			result.emplace_back(table_index, offset);
+			result.emplace_back(table_index, ProjectionIndex(offset));
 		}
 		return result;
 	}

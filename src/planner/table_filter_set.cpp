@@ -175,7 +175,7 @@ void DynamicTableFilterSet::PushFilterDirect(idx_t column_index, unique_ptr<Tabl
 	if (!direct_filters) {
 		direct_filters = make_uniq<TableFilterSet>();
 	}
-	direct_filters->PushFilter(ColumnIndex(column_index), std::move(filter));
+	direct_filters->PushFilter(ProjectionIndex(column_index), std::move(filter));
 }
 
 bool DynamicTableFilterSet::HasFilters() const {
@@ -201,7 +201,7 @@ DynamicTableFilterSet::GetFinalTableFilters(const PhysicalTableScan &scan,
 	}
 	if (direct_filters) {
 		for (auto &filter_entry : *direct_filters) {
-			result->PushFilter(ColumnIndex(filter_entry.ColumnIndex()), filter_entry.Filter().Copy());
+			result->PushFilter(filter_entry.GetIndex(), filter_entry.Filter().Copy());
 		}
 	}
 	if (!result->HasFilters()) {

@@ -84,7 +84,7 @@ public:
 			auto effective_filters = GetTableFilters(op);
 			if (effective_filters) {
 				for (auto &f : *effective_filters) {
-					auto col_idx = f.ColumnIndex();
+					auto col_idx = f.GetIndex().GetIndex();
 					string col_name = (col_idx < op.names.size()) ? op.names[op.column_ids[col_idx].GetPrimaryIndex()]
 					                                              : "col" + std::to_string(col_idx);
 					filter_descs.push_back(f.Filter().ToString(col_name));
