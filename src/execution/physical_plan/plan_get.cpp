@@ -108,7 +108,12 @@ PhysicalOperator &PhysicalPlanGenerator::CreatePlan(LogicalGet &op) {
 			virtual_columns = op.function.get_virtual_columns(context, op.bind_data.get());
 		}
 		for (auto &entry : table_filters->filters) {
-			auto column_id = column_ids[entry.first].GetPrimaryIndex();
+			auto &column_idx = column_ids[entry.first];
+			// Skip virtual columns (e.g., row_id) — they are not in returned_types
+			if (column_idx.IsVirtualColumn()) {
+				continue;
+			}
+			auto column_id = column_idx.GetPrimaryIndex();
 			if (!op.function.supports_pushdown_type(*op.bind_data, column_id)) {
 				LogicalType column_type;
 				if (IsVirtualColumn(column_id)) {
