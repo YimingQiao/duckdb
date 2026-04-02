@@ -17,6 +17,7 @@
 #include "duckdb/planner/table_filter_state.hpp"
 #include "duckdb/planner/filter/bloom_filter.hpp"
 #include "duckdb/planner/filter/perfect_hash_join_filter.hpp"
+#include "duckdb/planner/filter/rpt_table_filter.hpp"
 #include "duckdb/planner/filter/selectivity_optional_filter.hpp"
 
 #include <cstring>
@@ -572,6 +573,11 @@ idx_t ColumnSegment::FilterSelection(SelectionVector &sel, Vector &vector, Unifi
 	case duckdb::TableFilterType::PREFIX_RANGE_FILTER: {
 		auto &prefix_range_filter = filter.Cast<PrefixRangeTableFilter>();
 		return prefix_range_filter.Filter(vector, sel, approved_tuple_count);
+	}
+	case TableFilterType::RPT_FILTER: {
+		auto &rpt_filter = filter.Cast<RPTTableFilter>();
+		auto &state = filter_state.Cast<RPTTableFilterState>();
+		return rpt_filter.Filter(vector, sel, approved_tuple_count, state);
 	}
 	case TableFilterType::EXPRESSION_FILTER: {
 		auto &state = filter_state.Cast<ExpressionFilterState>();

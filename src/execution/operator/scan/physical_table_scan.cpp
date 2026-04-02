@@ -10,9 +10,13 @@
 #include "duckdb/execution/physical_table_scan_enum.hpp"
 #include "duckdb/main/settings.hpp"
 
+#include <atomic>
+#include <chrono>
 #include <utility>
 
 namespace duckdb {
+
+static const bool PRINT_TABLE_SCAN_STATS = false;
 
 PhysicalTableScan::PhysicalTableScan(PhysicalPlan &physical_plan, vector<LogicalType> types, TableFunction function_p,
                                      unique_ptr<FunctionData> bind_data_p, vector<LogicalType> returned_types_p,
@@ -61,6 +65,50 @@ public:
 			}
 			input_chunk.SetCardinality(1);
 		}
+
+		if (PRINT_TABLE_SCAN_STATS) {
+			oper_name = op.function.name;
+			if (op.function.to_string) {
+				TableFunctionToStringInput ts_input(op.function, op.bind_data.get());
+				auto to_string_result = op.function.to_string(ts_input);
+				for (const auto &it : to_string_result) {
+					if (it.first == "Table" || it.first == "table") {
+						oper_name += " (" + it.second + ")";
+						break;
+					}
+				}
+			}
+
+			num_columns = op.column_ids.size();
+
+			auto effective_filters = GetTableFilters(op);
+			if (effective_filters) {
+				for (auto &f : *effective_filters) {
+					auto col_idx = f.ColumnIndex();
+					string col_name = (col_idx < op.names.size()) ? op.names[op.column_ids[col_idx].GetPrimaryIndex()]
+					                                              : "col" + std::to_string(col_idx);
+					filter_descs.push_back(f.Filter().ToString(col_name));
+				}
+			}
+		}
+	}
+
+	~TableScanGlobalSourceState() override {
+		if (PRINT_TABLE_SCAN_STATS && (total_rows > 0 || total_time_us > 0)) {
+			fprintf(stderr, "[PhysicalTableScan] %s | Cols: %lu | Chunks: %lu | Rows: %lu | Time: %.3f ms",
+			        oper_name.c_str(), (unsigned long)num_columns, (unsigned long)total_chunks.load(),
+			        (unsigned long)total_rows.load(), total_time_us.load() / 1000.0);
+			if (!filter_descs.empty()) {
+				fprintf(stderr, " | Filters(%lu): ", (unsigned long)filter_descs.size());
+				for (idx_t i = 0; i < filter_descs.size(); i++) {
+					if (i > 0) {
+						fprintf(stderr, ", ");
+					}
+					fprintf(stderr, "%s", filter_descs[i].c_str());
+				}
+			}
+			fprintf(stderr, "\n");
+		}
 	}
 
 	idx_t max_threads = 0;
@@ -77,6 +125,13 @@ public:
 	idx_t MaxThreads() override {
 		return max_threads;
 	}
+
+	string oper_name;
+	idx_t num_columns = 0;
+	vector<string> filter_descs;
+	std::atomic<idx_t> total_chunks {0};
+	std::atomic<idx_t> total_rows {0};
+	std::atomic<uint64_t> total_time_us {0};
 };
 
 class TableScanLocalSourceState : public LocalSourceState {
@@ -162,6 +217,19 @@ SourceResultType PhysicalTableScan::GetDataInternal(ExecutionContext &context, D
 	D_ASSERT(!column_ids.empty());
 	auto &g_state = input.global_state.Cast<TableScanGlobalSourceState>();
 	auto &l_state = input.local_state.Cast<TableScanLocalSourceState>();
+	auto start = std::chrono::steady_clock::now();
+	auto record_scan_stats = [&](idx_t row_count) {
+		if (!PRINT_TABLE_SCAN_STATS) {
+			return;
+		}
+		auto end = std::chrono::steady_clock::now();
+		auto elapsed_us = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+		g_state.total_time_us.fetch_add(static_cast<uint64_t>(elapsed_us));
+		if (row_count > 0) {
+			g_state.total_chunks.fetch_add(1);
+			g_state.total_rows.fetch_add(row_count);
+		}
+	};
 
 	TableFunctionInput data(bind_data.get(), l_state.local_state.get(), g_state.global_state.get());
 
@@ -182,6 +250,7 @@ SourceResultType PhysicalTableScan::GetDataInternal(ExecutionContext &context, D
 		// inconsistencies
 		ValidateAsyncStrategyResult(execution_strategy, input_execution_mode, data.results_execution_mode,
 		                            initial_async_result, output_async_result, chunk.size());
+		record_scan_stats(chunk.size());
 
 		// Handle results
 		switch (output_async_result) {
@@ -229,6 +298,7 @@ SourceResultType PhysicalTableScan::GetDataInternal(ExecutionContext &context, D
 		function.in_out_function_final(context, data, chunk);
 		g_state.in_out_final = true;
 	}
+	record_scan_stats(chunk.size());
 	return chunk.size() == 0 ? SourceResultType::FINISHED : SourceResultType::HAVE_MORE_OUTPUT;
 }
 

@@ -65,4 +65,15 @@ struct BFTableFilterState final : public TableFilterState {
 	}
 };
 
+struct RPTTableFilterState final : public TableFilterState {
+	idx_t current_capacity;
+	Vector keys_sliced_v;
+	SelectionVector result_sel;
+
+	explicit RPTTableFilterState(const LogicalType &key_type)
+	    : current_capacity(STANDARD_VECTOR_SIZE),
+	      keys_sliced_v(key_type), result_sel(STANDARD_VECTOR_SIZE) {
+	}
+};
+
 } // namespace duckdb
