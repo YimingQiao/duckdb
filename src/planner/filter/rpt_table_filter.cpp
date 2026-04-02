@@ -12,11 +12,12 @@ idx_t RPTTableFilter::Filter(Vector &keys_v, SelectionVector &sel, idx_t &approv
 
 	// Slice keys by sel, like BFTableFilter::HashInternal
 	DataChunk chunk;
+	chunk.InitializeEmpty({key_type_});
 	if (sel.IsSet()) {
 		state.keys_sliced_v.Slice(keys_v, sel, approved_tuple_count);
-		chunk.data.emplace_back(state.keys_sliced_v);
+		chunk.data[0].Reference(state.keys_sliced_v);
 	} else {
-		chunk.data.emplace_back(keys_v);
+		chunk.data[0].Reference(keys_v);
 	}
 	chunk.SetCardinality(approved_tuple_count);
 
