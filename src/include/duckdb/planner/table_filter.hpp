@@ -35,6 +35,7 @@ enum class TableFilterType : uint8_t {
 	DYNAMIC_FILTER = 8,      // dynamic filters can be updated at run-time
 	EXPRESSION_FILTER = 9,   // an arbitrary expression
 	BLOOM_FILTER = 10,       // a probabilistic filter that can test whether a value is in a set of other value
+	RPT_FILTER = 11,         // RPT extension bloom/bitmap filter
 };
 
 //! TableFilter represents a filter pushed down into the table scan.
