@@ -175,6 +175,10 @@ void ConstantFun::FiltersNullValues(const LogicalType &type, const TableFilter &
 		filters_nulls = true;
 		break;
 	}
+	case TableFilterType::RPT_FILTER: {
+		filters_nulls = true;
+		break;
+	}
 	default:
 		throw InternalException("FIXME: unsupported type for filter selection in validity select");
 	}
