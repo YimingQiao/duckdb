@@ -1,0 +1,7 @@
+# name: benchmark/large/tpcds-sf10/q46.benchmark
+# description: Run query 46 from the TPC-DS benchmark ()
+# group: [tpcds-sf10]
+
+template benchmark/large/tpcds-sf10/tpcds_sf10.benchmark.in
+QUERY_NUMBER=46
+QUERY_NUMBER_PADDED=46

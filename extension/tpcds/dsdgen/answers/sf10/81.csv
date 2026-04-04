@@ -1,0 +1,101 @@
+c_customer_id|c_salutation|c_first_name|c_last_name|ca_street_number|ca_street_name|ca_street_type|ca_suite_number|ca_city|ca_county|ca_state|ca_zip|ca_country|ca_gmt_offset|ca_location_type|ctr_total_return
+AAAAAAAAAABMBAAA|Mr.|Timothy|Smith|573|1st Hickory|Cir.|Suite T|Florence|Thomas County|GA|33394|United States|-5.00|condo|5313.71
+AAAAAAAAAABMBAAA|Mr.|Timothy|Smith|573|1st Hickory|Cir.|Suite T|Florence|Thomas County|GA|33394|United States|-5.00|condo|11151.86
+AAAAAAAAAADCGAAA|Dr.|Paul|White|963|Hickory |Blvd|Suite M|Pleasant Grove|Floyd County|GA|34136|United States|-5.00|condo|1768.52
+AAAAAAAAAADGAAAA|Mrs.|Ann|Mcnamee|392|Hickory |Circle|Suite 320|Woodcrest|DeKalb County|GA|34919|United States|-5.00|condo|3597.03
+AAAAAAAAAAFKEAAA|Sir|Nickolas|Goodwin|746|College South|Ave|Suite 10|Riverside|Baldwin County|GA|39231|United States|-5.00|condo|3081.45
+AAAAAAAAAAGEFAAA|Dr.|Edwin|Mercier|735|Forest |Lane|Suite O|Florence|Walton County|GA|33394|United States|-5.00|apartment|5562.27
+AAAAAAAAAAGPAAAA|Sir|Joseph|White|596|Main 3rd|Blvd|Suite 230|Pleasant Grove|Colquitt County|GA|34136|United States|-5.00|single family|3099.69
+AAAAAAAAAAKJCAAA|Miss|Tonya|Aguayo|956|Poplar |Ln|Suite M|Mountain View|Berrien County|GA|34466|United States|-5.00|single family|6464.99
+AAAAAAAAAALOAAAA|Mrs.|Tara|Beckham|891|Jackson Central|Ct.|Suite 150|Buckingham|Monroe County|GA|34092|United States|-5.00|single family|2280.49
+AAAAAAAAAALOAAAA|Mrs.|Tara|Beckham|891|Jackson Central|Ct.|Suite 150|Buckingham|Monroe County|GA|34092|United States|-5.00|single family|3112.51
+AAAAAAAAABBHEAAA|Mrs.|Sherita|Hill|427|Elm |Way|Suite Y|Woodville|Echols County|GA|34289|United States|-5.00|single family|1801.57
+AAAAAAAAABGHGAAA|Sir|Richard|Smith|787|College |Road|Suite 430|Ashland|Dade County|GA|34244|United States|-5.00|apartment|3449.68
+AAAAAAAAABGHGAAA|Sir|Richard|Smith|787|College |Road|Suite 430|Ashland|Dade County|GA|34244|United States|-5.00|apartment|9984.92
+AAAAAAAAABKCBAAA|Dr.|James|Neal|874|Laurel |Cir.|Suite 30|Cedar Grove|Irwin County|GA|30411|United States|-5.00|apartment|3531.78
+AAAAAAAAABKGBAAA|Dr.|Gabriel|Jones|104|North |RD|Suite 330|Oakdale|Elbert County|GA|39584|United States|-5.00|condo|2871.20
+AAAAAAAAABMACAAA|Sir|Michael|Bryant|245|Miller |Ct.|Suite B|Wilson|Rockdale County|GA|36971|United States|-5.00|single family|1995.21
+AAAAAAAAABONGAAA|Sir|Phillip|Goolsby|916|6th North|Circle|Suite 100|Hamilton|Elbert County|GA|32808|United States|-5.00|single family|1672.60
+AAAAAAAAABONGAAA|Sir|Phillip|Goolsby|916|6th North|Circle|Suite 100|Hamilton|Elbert County|GA|32808|United States|-5.00|single family|1880.53
+AAAAAAAAABONGAAA|Sir|Phillip|Goolsby|916|6th North|Circle|Suite 100|Hamilton|Elbert County|GA|32808|United States|-5.00|single family|4790.12
+AAAAAAAAACAHAAAA|Ms.|Cindy|Moran|818|Central |NULL|Suite 170|NULL|Laurens County|GA|NULL|United States|-5.00|apartment|2161.76
+AAAAAAAAACCBAAAA|Mr.|George|Williamson|965|Oak |Avenue|Suite L|Lincoln|Twiggs County|GA|31289|United States|-5.00|single family|9891.84
+AAAAAAAAACELBAAA|Ms.|Helena|Mckinley|856|Davis 10th|Court|Suite L|Wilson|Lincoln County|GA|36971|United States|-5.00|single family|2326.02
+AAAAAAAAACELBAAA|Ms.|Helena|Mckinley|856|Davis 10th|Court|Suite L|Wilson|Lincoln County|GA|36971|United States|-5.00|single family|2565.10
+AAAAAAAAACGCGAAA|Dr.|Daniel|Carter|338|Washington Fourteenth|Ct.|Suite K|Shady Grove|Terrell County|GA|32812|United States|-5.00|apartment|2312.50
+AAAAAAAAACGEDAAA|Sir|William|Chapman|315|Jackson |Ct.|Suite 320|Barnes|Baldwin County|GA|33788|United States|-5.00|condo|7006.16
+AAAAAAAAACGEDAAA|Sir|William|Chapman|315|Jackson |Ct.|Suite 320|Barnes|Baldwin County|GA|33788|United States|-5.00|condo|9504.76
+AAAAAAAAACHKEAAA|Mr.|Arnold|Schmitt|603|View |Circle|Suite L|Liberty|Floyd County|GA|33451|United States|-5.00|apartment|2395.82
+AAAAAAAAACJEAAAA|Dr.|William|Torres|716|Cedar Central|Street|Suite L|Crossroads|Montgomery County|GA|30534|United States|-5.00|condo|12263.86
+AAAAAAAAACJLDAAA|Miss|Colleen|Potts|893|Park 9th|Ct.|Suite Q|Belmont|Fulton County|GA|30191|United States|-5.00|single family|1827.78
+AAAAAAAAACKKGAAA|Mrs.|Sarah|Glover|156|North |Boulevard|Suite G|Woodville|Carroll County|GA|34289|United States|-5.00|apartment|2864.31
+AAAAAAAAACMKEAAA|Dr.|Roy|Crabtree|909|Cedar Madison|Blvd|Suite O|Unionville|Lanier County|GA|31711|United States|-5.00|condo|4246.36
+AAAAAAAAACMMGAAA|Sir|Leonard|Wilson|404|Park View|Way|Suite 260|Plainview|Decatur County|GA|33683|United States|-5.00|apartment|6609.57
+AAAAAAAAACOOBAAA|Mrs.|Sally|Villa|131|Miller View|Lane|Suite 260|Buena Vista|Twiggs County|GA|35752|United States|-5.00|apartment|2339.06
+AAAAAAAAACPIHAAA|Mrs.|Ashley|Garcia|941|First |ST|Suite 390|Mount Vernon|Lamar County|GA|39127|United States|-5.00|apartment|4854.86
+AAAAAAAAADAPDAAA|Dr.|Thelma|Brown|NULL|NULL|Avenue|Suite 360|NULL|Ben Hill County|GA|NULL|NULL|-5.00|apartment|3072.96
+AAAAAAAAADBNAAAA|Mr.|John|Benton|936|Hill Hill|Dr.|Suite V|Woodlawn|Bartow County|GA|34098|United States|-5.00|condo|3540.72
+AAAAAAAAADCGBAAA|Sir|Raymond|Odonnell|939|Williams West|Pkwy|Suite 40|Edgewood|Laurens County|GA|30069|United States|-5.00|apartment|3927.88
+AAAAAAAAADDCEAAA|Mrs.|Antonio|Conti|714|Sycamore Cedar|Street|Suite 270|Mount Pleasant|Twiggs County|GA|32739|United States|-5.00|condo|1863.27
+AAAAAAAAADEDEAAA|Dr.|Helen|Mason|483|First |Blvd|Suite S|Clifton|Decatur County|GA|38014|United States|-5.00|single family|2430.79
+AAAAAAAAADEGDAAA|Miss|Brittany|Mckenzie|189|Jackson 7th|Parkway|Suite 360|Lakewood|Dade County|GA|38877|United States|-5.00|single family|3784.53
+AAAAAAAAADEIGAAA|Dr.|Gary|Baker|711|Lee |Ct.|Suite 220|Lakeside|Miller County|GA|39532|United States|-5.00|condo|2217.73
+AAAAAAAAADGHBAAA|Sir|Daniel|Cason|196|Willow Dogwood|ST|Suite 400|Belmont|Washington County|GA|30191|United States|-5.00|single family|2496.75
+AAAAAAAAADGIFAAA|Sir|Bryant|Goodwin|916|Park Woodland|Blvd|Suite 200|Arlington|Fulton County|GA|36557|United States|-5.00|single family|6378.41
+AAAAAAAAADICEAAA|Mr.|James|Marsh|170|West |Way|Suite 150|Newtown|Fayette County|GA|31749|United States|-5.00|condo|1720.97
+AAAAAAAAADICEAAA|Mr.|James|Marsh|170|West |Way|Suite 150|Newtown|Fayette County|GA|31749|United States|-5.00|condo|3858.44
+AAAAAAAAADIPBAAA|Sir|Gary|Scott|735|Second Pine|Parkway|Suite R|Jackson|Jasper County|GA|39583|United States|-5.00|apartment|6438.94
+AAAAAAAAADJPFAAA|Dr.|Melissa|Ross|327|Wilson |Parkway|Suite 390|Liberty|Echols County|GA|33451|United States|-5.00|apartment|4464.10
+AAAAAAAAADKOCAAA|Ms.|NULL|NULL|380|3rd Miller|Street|Suite 150|Unionville|DeKalb County|GA|31711|United States|-5.00|apartment|5575.00
+AAAAAAAAADOEGAAA|Mr.|James|Torres|384|College Laurel|Ct.|Suite 400|Hamilton|Screven County|GA|32808|United States|-5.00|single family|2387.94
+AAAAAAAAADOPEAAA|Sir|Nelson|Allison|108|10th Dogwood|Wy|Suite 310|Crossroads|White County|GA|30534|United States|-5.00|condo|11273.53
+AAAAAAAAADPNBAAA|Mrs.|Betty|Jude|331|Pine |Court|Suite G|Mount Zion|DeKalb County|GA|38054|United States|-5.00|apartment|2676.11
+AAAAAAAAAEAMGAAA|Ms.|Susana|Stephens|NULL|NULL|NULL|Suite F|NULL|Lowndes County|GA|NULL|United States|-5.00|single family|2424.59
+AAAAAAAAAECADAAA|Dr.|Martha|Thompson|784|First Lincoln|Court|Suite 310|Spring Valley|Oglethorpe County|GA|36060|United States|-5.00|apartment|2314.80
+AAAAAAAAAECEFAAA|Sir|Paul|Michel|943|Highland |Road|Suite M|Highland|Dougherty County|GA|39454|United States|-5.00|single family|2704.59
+AAAAAAAAAECGDAAA|Mrs.|Lorraine|Hummel|757|Hill South|Street|Suite 50|Wildwood|Randolph County|GA|36871|United States|-5.00|single family|2576.87
+AAAAAAAAAECHEAAA|Mrs.|Hope|Campbell|121|Highland |Lane|Suite G|Macedonia|Miller County|GA|31087|United States|-5.00|apartment|11403.37
+AAAAAAAAAEDOCAAA|Dr.|Evangeline|Longo|677|Sunset Chestnut|Circle|Suite S|Riverdale|Forsyth County|GA|39391|United States|-5.00|apartment|2862.34
+AAAAAAAAAEJDHAAA|Dr.|Donald|Jones|100|Park |Avenue|Suite 350|Bath|Tift County|GA|30573|United States|-5.00|single family|2721.05
+AAAAAAAAAEJFBAAA|NULL|NULL|NULL|566|Jackson |Road|Suite 200|Ashland|Spalding County|GA|34244|United States|-5.00|apartment|3129.65
+AAAAAAAAAEJKGAAA|Ms.|Amy|Melendez|244|Elm Seventh|Pkwy|Suite S|Red Hill|Bibb County|GA|34338|United States|-5.00|apartment|5933.57
+AAAAAAAAAEKBBAAA|Dr.|Loretta|Bridges|270|Church |RD|Suite 480|Highland Park|Terrell County|GA|36534|United States|-5.00|single family|3415.18
+AAAAAAAAAEMLDAAA|Mr.|Robert|Ward|11|NULL|Lane|Suite D|NULL|Laurens County|GA|NULL|United States|-5.00|NULL|5238.87
+AAAAAAAAAEOHFAAA|Mr.|Leonard|Miller|975|Railroad |Parkway|Suite 430|Fairview|Calhoun County|GA|35709|United States|-5.00|condo|1829.52
+AAAAAAAAAFADDAAA|Dr.|Ronald|Walker|687|1st West|RD|Suite K|Hamilton|Glynn County|GA|32808|United States|-5.00|apartment|2953.01
+AAAAAAAAAFCPEAAA|Mrs.|Michelle|Dale|214|5th |Blvd|Suite X|Springdale|Tift County|GA|38883|United States|-5.00|apartment|2599.01
+AAAAAAAAAFDHAAAA|Sir|John|Young|895|Franklin Sunset|Blvd|Suite L|Walnut Grove|Dodge County|GA|37752|United States|-5.00|single family|7254.14
+AAAAAAAAAFECBAAA|Sir|Bill|Medeiros|724|Lee Cedar|Way|Suite 310|Georgetown|Towns County|GA|37057|United States|-5.00|single family|4315.26
+AAAAAAAAAFEGDAAA|Dr.|Johnny|Wiggins|901|2nd Lincoln|Parkway|Suite F|Silver Springs|Meriwether County|GA|34843|United States|-5.00|apartment|2884.68
+AAAAAAAAAFGAHAAA|Sir|Raymond|Velazquez|348|East Church|Ct.|Suite G|Woodland|Peach County|GA|34854|United States|-5.00|condo|2539.16
+AAAAAAAAAFKFHAAA|Mr.|Kenneth|Mckee|761|15th |Road|Suite 390|Shady Grove|Bartow County|GA|32812|United States|-5.00|apartment|2038.00
+AAAAAAAAAFKNAAAA|Ms.|Louise|Gant|232|West |Lane|Suite L|Franklin|Miller County|GA|39101|United States|-5.00|single family|1766.62
+AAAAAAAAAFLJHAAA|Dr.|Ann|Hamel|835|Lake |Court|Suite R|Quincy|Brooks County|GA|33868|United States|-5.00|apartment|2402.19
+AAAAAAAAAFNLDAAA|Mrs.|Selene|Little|239|14th |Drive|Suite F|Concord|Floyd County|GA|34107|United States|-5.00|condo|2815.89
+AAAAAAAAAGAOGAAA|Sir|Gregory|Acosta|414|5th |Road|Suite 180|Florence|Upson County|GA|33394|United States|-5.00|condo|2692.01
+AAAAAAAAAGDBEAAA|Ms.|Martha|Willis|141|Maple Fifth|Cir.|Suite K|Mountain View|Dooly County|GA|34466|United States|-5.00|single family|1715.45
+AAAAAAAAAGEGDAAA|Ms.|Constance|Jones|565|Third |Ln|Suite 10|Clinton|Mitchell County|GA|38222|United States|-5.00|condo|1806.07
+AAAAAAAAAGKEBAAA|Mrs.|Amy|Sullivan|904|14th |Lane|Suite 490|Oneida|Dougherty County|GA|34027|United States|-5.00|apartment|2975.96
+AAAAAAAAAGKGCAAA|Mr.|David|Beaulieu|533|East Fifth|Dr.|Suite 120|Pleasant Grove|Harris County|GA|34136|United States|-5.00|single family|4018.14
+AAAAAAAAAGMDCAAA|Dr.|Earnestine|Dennis|171|13th |Road|Suite R|Riverview|Heard County|GA|39003|United States|-5.00|condo|5363.22
+AAAAAAAAAGMHEAAA|Mrs.|Elizabeth|Ramos|786|Meadow |Ct.|Suite 70|Waterloo|Brantley County|GA|31675|United States|-5.00|condo|1817.02
+AAAAAAAAAGPFEAAA|Sir|Charles|Garcia|834|8th |Dr.|Suite 200|Sunnyside|Stewart County|GA|31952|United States|-5.00|condo|4163.91
+AAAAAAAAAHABGAAA|Mr.|Salvador|Norris|549|Meadow Dogwood|Parkway|Suite 390|Forest Hills|Montgomery County|GA|39237|United States|-5.00|single family|3464.69
+AAAAAAAAAHAMFAAA|Dr.|Deborah|Lowery|868|Maple Oak|Court|Suite 470|Riverside|Troup County|GA|39231|United States|-5.00|condo|5423.80
+AAAAAAAAAHBOGAAA|Sir|Brian|Miller|785|River |ST|Suite U|Highland Park|Seminole County|GA|36534|United States|-5.00|condo|11162.54
+AAAAAAAAAHCIBAAA|Dr.|Mike|Cross|100|7th 2nd|Way|Suite C|Union Hill|Cobb County|GA|37746|United States|-5.00|condo|3901.45
+AAAAAAAAAHCIBAAA|Dr.|Mike|Cross|100|7th 2nd|Way|Suite C|Union Hill|Cobb County|GA|37746|United States|-5.00|condo|7616.00
+AAAAAAAAAHDKEAAA|Dr.|John|Parker|195|View |Wy|Suite E|Florence|Fannin County|GA|33394|United States|-5.00|single family|2841.51
+AAAAAAAAAHECDAAA|Sir|Brian|Miller|472|15th |Pkwy|Suite 140|Edgewood|Elbert County|GA|30069|United States|-5.00|condo|1759.52
+AAAAAAAAAHECGAAA|Sir|John|Jefferson|2|Seventh |Drive|Suite S|Deerfield|Pike County|GA|39840|United States|-5.00|condo|3766.90
+AAAAAAAAAHEPAAAA|Miss|Nicole|Leone|927|Wilson 1st|Way|Suite B|Clifton|Union County|GA|38014|United States|-5.00|condo|3031.39
+AAAAAAAAAHFPAAAA|Ms.|Eve|Weaver|102|South Woodland|Street|Suite 90|Oak Ridge|Screven County|GA|38371|United States|-5.00|apartment|9681.41
+AAAAAAAAAHGBBAAA|Dr.|Robert|Collins|980|Park Hill|Ln|Suite D|Sunnyside|Hancock County|GA|31952|United States|-5.00|condo|3609.61
+AAAAAAAAAHGBDAAA|Dr.|Amanda|King|271|Smith Dogwood|Ave|Suite I|Oak Hill|Coffee County|GA|37838|United States|-5.00|apartment|3437.91
+AAAAAAAAAHGJEAAA|Mr.|Raymond|Light|559|Wilson |Parkway|Suite 260|Crossroads|Rabun County|GA|30534|United States|-5.00|single family|3578.64
+AAAAAAAAAHJIFAAA|Dr.|NULL|NULL|125|Oak Lee|Ln|Suite G|Red Hill|Wheeler County|GA|34338|United States|-5.00|single family|4917.83
+AAAAAAAAAHLECAAA|Dr.|Amy|White|158|Woodland West|Lane|Suite 390|Union|Laurens County|GA|38721|United States|-5.00|condo|3445.56
+AAAAAAAAAHLFGAAA|Mrs.|Edith|NULL|127|Jackson |Boulevard|Suite 350|Gilmore|Pickens County|GA|35464|United States|-5.00|condo|1983.36
+AAAAAAAAAHMIBAAA|Mrs.|Diane|Jasso|598|Tenth Hillcrest|Avenue|Suite V|Buena Vista|Cherokee County|GA|35752|United States|-5.00|single family|5096.47
+AAAAAAAAAHNJFAAA|Miss|Amelia|Sanchez|729|West Oak|Blvd|Suite 380|Oakdale|Tift County|GA|39584|United States|-5.00|apartment|2748.20
+AAAAAAAAAHOLCAAA|Dr.|John|Holmes|700|Hill College|Parkway|Suite 340|Bethel|Spalding County|GA|35281|United States|-5.00|single family|4168.58

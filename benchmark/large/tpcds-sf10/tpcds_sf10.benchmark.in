@@ -1,0 +1,17 @@
+# name: ${FILE_PATH}
+# description: ${DESCRIPTION}
+# group: [tpcds-sf10]
+
+name Q${QUERY_NUMBER_PADDED}
+group tpcds
+subgroup sf10
+
+require tpcds
+
+cache tpcds_sf10.duckdb
+
+load benchmark/large/tpcds-sf10/load.sql
+
+run extension/tpcds/dsdgen/queries/${QUERY_NUMBER_PADDED}.sql
+
+result extension/tpcds/dsdgen/answers/sf10/${QUERY_NUMBER_PADDED}.csv

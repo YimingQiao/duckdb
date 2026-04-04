@@ -1,0 +1,16 @@
+"main.""substring""(r_reason_desc, 1, 20)"|avg1|avg2|avg(wr_fee)
+Did not like the col|94.0|3078.98|92.97
+Does not work with a|55.0|3474.92|25.45
+Found a better exten|12.0|426.35|85.13
+Found a better price|35.0|326.95|45.85666666666666
+No service location |6.0|244.23|57.98
+Not working any more|40.0|232.11|38.06
+Stopped working|22.0|1572.79|22.08
+Wrong size|6.0|93.74|1.84
+reason 27|20.0|10.45|8.71
+reason 31|8.0|148.02|79.03
+reason 33|3.0|93.44|63.01
+reason 37|18.0|172.17|63.35
+reason 40|32.666666666666664|1606.6033333333335|51.586666666666666
+reason 41|72.0|1863.19|30.85
+reason 43|66.0|971.39|6.73

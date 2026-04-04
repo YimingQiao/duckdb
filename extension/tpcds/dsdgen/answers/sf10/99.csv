@@ -1,0 +1,101 @@
+w_substr|sm_type|cc_name_lower|30 days|31-60 days|61-90 days|91-120 days|>120 days
+NULL|EXPRESS|california|1533|1598|1526|0|0
+NULL|EXPRESS|california_1|1463|1604|1567|0|0
+NULL|EXPRESS|hawaii/alaska|1468|1623|1592|0|0
+NULL|EXPRESS|hawaii/alaska_1|1543|1604|1614|0|0
+NULL|EXPRESS|mid atlantic|1498|1615|1667|0|0
+NULL|EXPRESS|mid atlantic_1|1597|1547|1538|0|0
+NULL|EXPRESS|north midwest|1581|1590|1633|0|0
+NULL|EXPRESS|north midwest_1|1608|1663|1614|0|0
+NULL|EXPRESS|ny metro|1570|1582|1566|0|0
+NULL|EXPRESS|ny metro_1|1534|1586|1584|0|0
+NULL|EXPRESS|pacific northwest|1520|1592|1604|0|0
+NULL|EXPRESS|pacific northwest_1|1598|1589|1606|0|0
+NULL|LIBRARY|california|1127|1173|1185|0|0
+NULL|LIBRARY|california_1|1160|1193|1232|0|0
+NULL|LIBRARY|hawaii/alaska|1169|1174|1189|0|0
+NULL|LIBRARY|hawaii/alaska_1|1183|1193|1225|0|0
+NULL|LIBRARY|mid atlantic|1158|1215|1228|0|0
+NULL|LIBRARY|mid atlantic_1|1154|1171|1256|0|0
+NULL|LIBRARY|north midwest|1151|1231|1216|0|0
+NULL|LIBRARY|north midwest_1|1231|1218|1214|0|0
+NULL|LIBRARY|ny metro|1176|1199|1160|0|0
+NULL|LIBRARY|ny metro_1|1228|1192|1215|0|0
+NULL|LIBRARY|pacific northwest|1186|1218|1222|0|0
+NULL|LIBRARY|pacific northwest_1|1151|1226|1238|0|0
+NULL|NEXT DAY|california|1602|1559|1533|0|0
+NULL|NEXT DAY|california_1|1465|1564|1635|0|0
+NULL|NEXT DAY|hawaii/alaska|1601|1534|1660|0|0
+NULL|NEXT DAY|hawaii/alaska_1|1565|1595|1559|0|0
+NULL|NEXT DAY|mid atlantic|1536|1576|1610|0|0
+NULL|NEXT DAY|mid atlantic_1|1521|1523|1607|0|0
+NULL|NEXT DAY|north midwest|1628|1635|1591|0|0
+NULL|NEXT DAY|north midwest_1|1509|1642|1646|0|0
+NULL|NEXT DAY|ny metro|1525|1559|1631|0|0
+NULL|NEXT DAY|ny metro_1|1583|1555|1655|0|0
+NULL|NEXT DAY|pacific northwest|1514|1624|1589|0|0
+NULL|NEXT DAY|pacific northwest_1|1555|1617|1548|0|0
+NULL|OVERNIGHT|california|1169|1258|1167|0|0
+NULL|OVERNIGHT|california_1|1169|1215|1195|0|0
+NULL|OVERNIGHT|hawaii/alaska|1172|1156|1195|0|0
+NULL|OVERNIGHT|hawaii/alaska_1|1196|1184|1224|0|0
+NULL|OVERNIGHT|mid atlantic|1121|1242|1210|0|0
+NULL|OVERNIGHT|mid atlantic_1|1165|1175|1240|0|0
+NULL|OVERNIGHT|north midwest|1140|1231|1188|0|0
+NULL|OVERNIGHT|north midwest_1|1100|1187|1233|0|0
+NULL|OVERNIGHT|ny metro|1161|1209|1203|0|0
+NULL|OVERNIGHT|ny metro_1|1188|1203|1205|0|0
+NULL|OVERNIGHT|pacific northwest|1144|1171|1191|0|0
+NULL|OVERNIGHT|pacific northwest_1|1128|1158|1215|0|0
+NULL|REGULAR|california|1196|1239|1173|0|0
+NULL|REGULAR|california_1|1160|1252|1175|0|0
+NULL|REGULAR|hawaii/alaska|1169|1198|1149|0|0
+NULL|REGULAR|hawaii/alaska_1|1164|1166|1244|0|0
+NULL|REGULAR|mid atlantic|1171|1191|1211|0|0
+NULL|REGULAR|mid atlantic_1|1192|1176|1148|0|0
+NULL|REGULAR|north midwest|1155|1252|1216|0|0
+NULL|REGULAR|north midwest_1|1157|1203|1226|0|0
+NULL|REGULAR|ny metro|1210|1171|1184|0|0
+NULL|REGULAR|ny metro_1|1205|1177|1206|0|0
+NULL|REGULAR|pacific northwest|1189|1181|1207|0|0
+NULL|REGULAR|pacific northwest_1|1178|1184|1218|0|0
+NULL|TWO DAY|california|1153|1240|1232|0|0
+NULL|TWO DAY|california_1|1131|1211|1234|0|0
+NULL|TWO DAY|hawaii/alaska|1202|1152|1126|0|0
+NULL|TWO DAY|hawaii/alaska_1|1152|1189|1218|0|0
+NULL|TWO DAY|mid atlantic|1146|1140|1212|0|0
+NULL|TWO DAY|mid atlantic_1|1160|1230|1212|0|0
+NULL|TWO DAY|north midwest|1162|1172|1253|0|0
+NULL|TWO DAY|north midwest_1|1159|1201|1231|0|0
+NULL|TWO DAY|ny metro|1179|1194|1265|0|0
+NULL|TWO DAY|ny metro_1|1184|1221|1216|0|0
+NULL|TWO DAY|pacific northwest|1187|1244|1263|0|0
+NULL|TWO DAY|pacific northwest_1|1177|1230|1198|0|0
+Certainly fede|EXPRESS|california|1553|1571|1509|0|0
+Certainly fede|EXPRESS|california_1|1561|1658|1612|0|0
+Certainly fede|EXPRESS|hawaii/alaska|1470|1618|1552|0|0
+Certainly fede|EXPRESS|hawaii/alaska_1|1530|1584|1616|0|0
+Certainly fede|EXPRESS|mid atlantic|1534|1650|1686|0|0
+Certainly fede|EXPRESS|mid atlantic_1|1507|1609|1617|0|0
+Certainly fede|EXPRESS|north midwest|1525|1591|1627|0|0
+Certainly fede|EXPRESS|north midwest_1|1588|1598|1618|0|0
+Certainly fede|EXPRESS|ny metro|1443|1615|1612|0|0
+Certainly fede|EXPRESS|ny metro_1|1605|1603|1590|0|0
+Certainly fede|EXPRESS|pacific northwest|1581|1631|1629|0|0
+Certainly fede|EXPRESS|pacific northwest_1|1548|1621|1619|0|0
+Certainly fede|LIBRARY|california|1130|1245|1147|0|0
+Certainly fede|LIBRARY|california_1|1159|1227|1173|0|0
+Certainly fede|LIBRARY|hawaii/alaska|1156|1146|1218|0|0
+Certainly fede|LIBRARY|hawaii/alaska_1|1150|1223|1198|0|0
+Certainly fede|LIBRARY|mid atlantic|1177|1263|1197|0|0
+Certainly fede|LIBRARY|mid atlantic_1|1221|1272|1205|0|0
+Certainly fede|LIBRARY|north midwest|1167|1276|1171|0|0
+Certainly fede|LIBRARY|north midwest_1|1168|1217|1182|0|0
+Certainly fede|LIBRARY|ny metro|1112|1183|1108|0|0
+Certainly fede|LIBRARY|ny metro_1|1157|1157|1168|0|0
+Certainly fede|LIBRARY|pacific northwest|1187|1218|1205|0|0
+Certainly fede|LIBRARY|pacific northwest_1|1150|1158|1215|0|0
+Certainly fede|NEXT DAY|california|1530|1525|1565|0|0
+Certainly fede|NEXT DAY|california_1|1476|1653|1545|0|0
+Certainly fede|NEXT DAY|hawaii/alaska|1555|1581|1555|0|0
+Certainly fede|NEXT DAY|hawaii/alaska_1|1568|1519|1627|0|0

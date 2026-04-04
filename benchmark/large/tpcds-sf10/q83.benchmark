@@ -1,0 +1,7 @@
+# name: benchmark/large/tpcds-sf10/q83.benchmark
+# description: Run query 83 from the TPC-DS benchmark ()
+# group: [tpcds-sf10]
+
+template benchmark/large/tpcds-sf10/tpcds_sf10.benchmark.in
+QUERY_NUMBER=83
+QUERY_NUMBER_PADDED=83

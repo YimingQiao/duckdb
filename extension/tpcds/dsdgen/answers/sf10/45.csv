@@ -1,0 +1,50 @@
+ca_zip|ca_city|sum(ws_sales_price)
+09532|Lakeside|47.32
+11387|Greenville|79.05
+13604|Pleasant Hill|134.68
+16871|Wildwood|5.22
+20162|Stringtown|19.94
+20534|Crossroads|27.99
+20587|Hopewell|14.25
+22812|Shady Grove|34.98
+27683|Green Acres|25.34
+28252|Maple Grove|24.73
+35817|Bridgeport|20.82
+45281|Bethel|84.09
+47537|Forest|146.09
+48059|Mount Olive|168.46
+49391|Riverdale|7.80
+49584|Oakdale|20.06
+50399|Marion|9.65
+52898|Lebanon|94.71
+53951|Glendale|80.05
+55804|Harmony|125.97
+60191|Belmont|6.58
+61087|Macedonia|12.96
+61749|Newtown|2.75
+63394|Florence|13.40
+69454|Highland|43.13
+69584|Oakdale|86.80
+70150|Bunker Hill|42.57
+73451|Liberty|185.71
+73683|Plainview|38.12
+74244|Ashland|35.67
+74466|Mountain View|39.92
+75752|Buena Vista|0.81
+76594|Hartland|93.86
+76614|Providence|37.10
+77752|Walnut Grove|5.88
+78059|Mount Olive|145.17
+78354|Sulphur Springs|75.52
+79003|Riverview|41.85
+80411|Cedar Grove|29.06
+80499|Summit|34.09
+84289|Woodville|60.22
+90162|Stringtown|71.33
+91387|Greenville|17.73
+92565|Colfax|13.01
+95709|Fairview|4.06
+97752|Walnut Grove|63.72
+98828|Greenwood|174.10
+NULL|Edgewood|0.33
+NULL|NULL|78.16

@@ -1,0 +1,2 @@
+promotions|total|((CAST(promotions AS DECIMAL(15, 4)) / CAST(total AS DECIMAL(15, 4))) * 100)
+10073912.22|20256211.76|49.732459056796515

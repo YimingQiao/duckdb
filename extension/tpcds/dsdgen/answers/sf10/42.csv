@@ -1,0 +1,12 @@
+d_year|i_category_id|i_category|sum(ss_ext_sales_price)
+2000|10|Electronics|3517172.56
+2000|1|Women|3361724.38
+2000|7|Home|3083177.40
+2000|2|Men|3079703.69
+2000|3|Children|3079043.11
+2000|4|Shoes|2988595.64
+2000|6|Jewelry|2867114.78
+2000|5|Music|2792171.43
+2000|8|Sports|2565485.04
+2000|9|Books|2536111.33
+2000|NULL|NULL|59012.39
