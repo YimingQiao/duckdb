@@ -109,15 +109,11 @@ void Transformer::TransformCTE(duckdb_libpgquery::PGWithClause &de_with_clause, 
 			throw ParserException("Duplicate CTE name \"%s\"", cte_name);
 		}
 
-		if (cte.ctematerialized == duckdb_libpgquery::PGCTEMaterializeDefault) {
-#ifdef DUCKDB_ALTERNATIVE_VERIFY
-			info->materialized = CTEMaterialize::CTE_MATERIALIZE_ALWAYS;
-#else
-			info->materialized = CTEMaterialize::CTE_MATERIALIZE_DEFAULT;
-#endif
-		} else if (cte.ctematerialized == duckdb_libpgquery::PGCTEMaterializeAlways) {
-			info->materialized = CTEMaterialize::CTE_MATERIALIZE_ALWAYS;
-		} else if (cte.ctematerialized == duckdb_libpgquery::PGCTEMaterializeNever) {
+			if (cte.ctematerialized == duckdb_libpgquery::PGCTEMaterializeDefault) {
+				info->materialized = CTEMaterialize::CTE_MATERIALIZE_ALWAYS;
+			} else if (cte.ctematerialized == duckdb_libpgquery::PGCTEMaterializeAlways) {
+				info->materialized = CTEMaterialize::CTE_MATERIALIZE_ALWAYS;
+			} else if (cte.ctematerialized == duckdb_libpgquery::PGCTEMaterializeNever) {
 			info->materialized = CTEMaterialize::CTE_MATERIALIZE_NEVER;
 		}
 
