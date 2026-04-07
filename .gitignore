@@ -74,6 +74,9 @@ m4/lt~obsolete.m4
 #==============================================================================#
 #m4/
 build/
+build_vanilla/
+build_vanilla2/
+build_vanilla3/
 duckdb_benchmark_data/
 #*.m4
 *.o
