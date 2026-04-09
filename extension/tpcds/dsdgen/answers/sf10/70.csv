@@ -1,0 +1,8 @@
+total_sum|s_state|s_county|lochierarchy|rank_within_parent
+-4326965109.63|NULL|NULL|2|1
+-1304231003.32|SD|NULL|1|1
+-1476939536.81|TN|NULL|1|2
+-1545794569.50|AL|NULL|1|3
+-1545794569.50|AL|Walker County|0|1
+-1304231003.32|SD|Ziebach County|0|1
+-1476939536.81|TN|Williamson County|0|1
