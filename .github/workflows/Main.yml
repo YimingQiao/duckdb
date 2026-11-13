@@ -37,7 +37,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  GH_TOKEN: ${{ secrets.GH_TOKEN }}
+  GH_TOKEN: ${{ secrets.GH_TOKEN || github.token }}
   # Override extension CI matrix reduction with "enabled" or "disabled".
   # Use "disabled" on risky PRs to run the full extension matrix.
   # OVERRIDE_REDUCED_CI_MODE: disabled
@@ -1288,6 +1288,8 @@ jobs:
     runs-on: ${{ needs.prepare.outputs.runner_linux_x64 }}
     container:
       image: ${{ fromJson(needs.prepare.outputs.images).manylinux_amd64_main }}
+      # TSan may need personality(ADDR_NO_RANDOMIZE), blocked by Docker's default seccomp profile.
+      options: ${{ needs.prepare.outputs.runner_provider == 'github' && '--security-opt seccomp=unconfined' || '' }}
     env:
       DUCKDB_VERSION: ${{ needs.prepare.outputs.duckdb_version }}
       DUCKDB_COMMIT: ${{ needs.prepare.outputs.duckdb_commit }}
